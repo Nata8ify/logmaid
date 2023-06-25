@@ -6,4 +6,6 @@ module xyz.n8ify.logmaid {
 
     opens xyz.n8ify.logmaid to javafx.fxml;
     exports xyz.n8ify.logmaid;
+    exports xyz.n8ify.logmaid.controller;
+    opens xyz.n8ify.logmaid.controller to javafx.fxml;
 }
