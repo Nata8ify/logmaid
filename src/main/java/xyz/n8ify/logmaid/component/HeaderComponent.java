@@ -6,12 +6,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import xyz.n8ify.logmaid.BaseApplication;
+import xyz.n8ify.logmaid.config.AppConfig;
 import xyz.n8ify.logmaid.constant.LabelConstant;
 import xyz.n8ify.logmaid.constant.StringConstant;
 import xyz.n8ify.logmaid.constant.UIConstant;
 import xyz.n8ify.logmaid.fatory.control.DefaultTextFieldFactory;
 
 import java.io.File;
+import java.util.Optional;
 
 public class HeaderComponent extends AbstractComponent {
 
@@ -32,6 +34,10 @@ public class HeaderComponent extends AbstractComponent {
         Button btnBrowse = new Button();
         DirectoryChooser chooser = new DirectoryChooser();
 
+        Optional.ofNullable(AppConfig.DEFAULT_INPUT_LOG_DIR_PATH).ifPresent(value -> {
+            application.onInputLogDirectorySelect(new File(value));
+            tfLogInputDir.setText(Optional.ofNullable(AppConfig.DEFAULT_INPUT_LOG_DIR_PATH).orElse(StringConstant.EMPTY));
+        });
         btnBrowse.setText(StringConstant.BROWSE);
         btnBrowse.setOnMouseClicked(mouseEvent -> {
             File destination = chooser.showDialog(application.getStage());
@@ -39,6 +45,9 @@ public class HeaderComponent extends AbstractComponent {
                 application.onInputLogDirectorySelect(destination);
                 tfLogInputDir.setText(application.getDataStorage().getInputLogDirPath());
             }
+        });
+        tfLogInputDir.textProperty().addListener((observableValue, oldText, newText) -> {
+            application.onInputLogDirectorySelect(new File(newText));
         });
 
         HBox container = new HBox(UIConstant.SM_INSET);
@@ -55,6 +64,10 @@ public class HeaderComponent extends AbstractComponent {
         Button btnBrowse = new Button();
         DirectoryChooser chooser = new DirectoryChooser();
 
+        Optional.ofNullable(AppConfig.DEFAULT_OUTPUT_LOG_DIR_PATH).ifPresent(value -> {
+            application.onOutputLogDirectorySelect(new File(value));
+            tfLogOutputDir.setText(Optional.ofNullable(AppConfig.DEFAULT_OUTPUT_LOG_DIR_PATH).orElse(StringConstant.EMPTY));
+        });
         btnBrowse.setText(StringConstant.BROWSE);
         btnBrowse.setOnMouseClicked(mouseEvent -> {
             File destination = chooser.showDialog(application.getStage());
@@ -62,6 +75,9 @@ public class HeaderComponent extends AbstractComponent {
                 application.onOutputLogDirectorySelect(destination);
                 tfLogOutputDir.setText(application.getDataStorage().getOutputLogDirPath());
             }
+        });
+        tfLogOutputDir.textProperty().addListener((observableValue, oldText, newText) -> {
+            application.onOutputLogDirectorySelect(new File(newText));
         });
 
         HBox container = new HBox(UIConstant.SM_INSET);

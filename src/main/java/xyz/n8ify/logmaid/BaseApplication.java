@@ -6,7 +6,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import xyz.n8ify.logmaid.callback.ApplicationCallback;
 import xyz.n8ify.logmaid.enums.Widget;
+import xyz.n8ify.logmaid.model.ExtractProperty;
 import xyz.n8ify.logmaid.storage.DataStorage;
+import xyz.n8ify.logmaid.utils.LogExtractorUtil;
 
 import java.io.File;
 import java.util.List;
@@ -26,11 +28,6 @@ public class BaseApplication extends Application implements ApplicationCallback 
     public Stage getStage() {
         return stage;
     }
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
-
     public DataStorage getDataStorage() {
         return dataStorage;
     }
@@ -51,11 +48,16 @@ public class BaseApplication extends Application implements ApplicationCallback 
         TextArea taAdhocKeyWord = (TextArea) stage.getScene().lookup(Widget.AdhocKeyWordTextArea.getQualifiedId());
         TextArea taIgnoredKeyWord = (TextArea) stage.getScene().lookup(Widget.IgnoredKeyWordTextArea.getQualifiedId());
         TextArea taGroupedThreadKeyWord = (TextArea) stage.getScene().lookup(Widget.GroupedThreadKeyWordTextArea.getQualifiedId());
+        ExtractProperty extractProperty = new ExtractProperty(taInterestedKeyWord.getText()
+                , taAdhocKeyWord.getText()
+                , taIgnoredKeyWord.getText()
+                , taGroupedThreadKeyWord.getText());
 
-        List<String> interestedKeyWordValues = List.of(taInterestedKeyWord.getText().split(NEW_LINE));
-        List<String> adhocKeyWordValues = List.of(taAdhocKeyWord.getText().split(NEW_LINE));
-        List<String> ignoredKeyWordValues = List.of(taIgnoredKeyWord.getText().split(NEW_LINE));
-        List<String> groupedThreadKeyWordValues = List.of(taGroupedThreadKeyWord.getText().split(NEW_LINE));
+        try {
+            LogExtractorUtil.proceed(extractProperty, this.dataStorage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

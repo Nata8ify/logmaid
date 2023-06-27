@@ -1,6 +1,7 @@
 package xyz.n8ify.logmaid.component;
 
 import javafx.scene.control.Button;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import xyz.n8ify.logmaid.BaseApplication;
 import xyz.n8ify.logmaid.constant.LabelConstant;
@@ -8,11 +9,9 @@ import xyz.n8ify.logmaid.constant.UIConstant;
 
 public class BottomComponent extends AbstractComponent {
 
-    public static VBox init(BaseApplication application) {
-        VBox container = new VBox(UIConstant.M_INSET);
-        container.getChildren().addAll(
-                initExtractButton(application)
-        );
+    public static BorderPane init(BaseApplication application) {
+        BorderPane container = new BorderPane();
+        container.setRight(initExtractButton(application));
         return container;
     }
 

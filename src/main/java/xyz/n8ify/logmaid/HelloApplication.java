@@ -37,7 +37,7 @@ public class HelloApplication extends BaseApplication {
     private void initialStage(Stage stage, Panel panel) {
         Scene scene = new Scene(panel);
         scene.getStylesheets().add(BootstrapFX.bootstrapFXStylesheet());
-        stage.setTitle(CommonConstant.APP_NAME);
+        stage.setTitle(String.format("%s %s", CommonConstant.APP_NAME, CommonConstant.VERSION));
         stage.setScene(scene);
         stage.setMinWidth(UIConstant.WINDOW_MIN_WIDTH);
         stage.setMinHeight(UIConstant.WINDOW_MIN_HEIGHT);
