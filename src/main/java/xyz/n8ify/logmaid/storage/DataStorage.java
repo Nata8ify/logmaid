@@ -1,5 +1,7 @@
 package xyz.n8ify.logmaid.storage;
 
+import xyz.n8ify.logmaid.utils.StringUtil;
+
 import java.util.ArrayList;
 
 public class DataStorage {
@@ -64,4 +66,9 @@ public class DataStorage {
     public void setGroupedByThreadKeywords(ArrayList<String> groupedByThreadKeywords) {
         this.groupedByThreadKeywords = groupedByThreadKeywords;
     }
+
+    public boolean isInputOutputDirectoryProvide() {
+        return StringUtil.isNotNullOrEmpty(this.inputLogDirPath) && StringUtil.isNotNullOrEmpty(this.outputLogDirPath);
+    }
+
 }

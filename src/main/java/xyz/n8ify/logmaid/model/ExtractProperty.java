@@ -83,6 +83,10 @@ public class ExtractProperty {
         this.rawGroupedThreadKeywordString = rawGroupedThreadKeywordString;
     }
 
+    public boolean isRequiredDataProvided() {
+        return StringUtil.isNotNullOrEmpty(this.rawInterestedKeywordString) || StringUtil.isNotNullOrEmpty(this.rawAdhocKeywordString);
+    }
+
     private List<String> parseRawKeywordList(String rawData) {
         return Stream.of(rawData.split(NEW_LINE))
                 .filter(it -> !it.isEmpty())

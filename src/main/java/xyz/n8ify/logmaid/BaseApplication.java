@@ -1,10 +1,13 @@
 package xyz.n8ify.logmaid;
 
 import javafx.application.Application;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import xyz.n8ify.logmaid.callback.ApplicationCallback;
+import xyz.n8ify.logmaid.constant.LabelConstant;
 import xyz.n8ify.logmaid.enums.Widget;
 import xyz.n8ify.logmaid.model.ExtractProperty;
 import xyz.n8ify.logmaid.storage.DataStorage;
@@ -54,7 +57,16 @@ public class BaseApplication extends Application implements ApplicationCallback 
                 , taGroupedThreadKeyWord.getText());
 
         try {
-            LogExtractorUtil.proceed(extractProperty, this.dataStorage);
+            boolean isInputOutputDirectoryProvide = this.dataStorage.isInputOutputDirectoryProvide();
+            boolean isRequiredDataProvided = extractProperty.isRequiredDataProvided();
+            if (isInputOutputDirectoryProvide && isRequiredDataProvided) {
+                LogExtractorUtil.proceed(extractProperty, this.dataStorage);
+            } else {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setHeaderText(LabelConstant.WARNING);
+                alert.getDialogPane().setContent(new Label(String.format(LabelConstant.WARNING_REQUIRED_DATA_MUST_BE_PROVIDED, isInputOutputDirectoryProvide, isRequiredDataProvided)));
+                alert.show();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

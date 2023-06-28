@@ -31,6 +31,7 @@ public class HeaderComponent extends AbstractComponent {
     private static HBox initInputDir(BaseApplication application) {
 
         TextField tfLogInputDir = DefaultTextFieldFactory.newInstance(LabelConstant.INPUT_PATH_HINT);
+        tfLogInputDir.setMinWidth(350);
         Button btnBrowse = new Button();
         DirectoryChooser chooser = new DirectoryChooser();
 
@@ -61,6 +62,7 @@ public class HeaderComponent extends AbstractComponent {
     private static HBox initOutputDir(BaseApplication application) {
 
         TextField tfLogOutputDir = DefaultTextFieldFactory.newInstance(LabelConstant.OUTPUT_PATH_HINT);
+        tfLogOutputDir.setMinWidth(350);
         Button btnBrowse = new Button();
         DirectoryChooser chooser = new DirectoryChooser();
 
