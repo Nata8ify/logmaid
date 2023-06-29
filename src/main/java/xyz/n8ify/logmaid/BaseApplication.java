@@ -31,6 +31,11 @@ public class BaseApplication extends Application implements ApplicationCallback,
     }
 
     @Override
+    public void onPresetSelect(String preset) {
+        System.out.println(preset);
+    }
+
+    @Override
     public void onExtractClick(MouseEvent event) {
         String inputDirectoryPath = ((TextField) stage.getScene().lookup(Widget.InputLogDirectoryTextField.getQualifiedId())).getText();
         String outputDirectoryPath = ((TextField) stage.getScene().lookup(Widget.OutputLogDirectoryTextField.getQualifiedId())).getText();

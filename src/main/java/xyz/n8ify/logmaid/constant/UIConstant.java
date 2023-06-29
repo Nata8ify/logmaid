@@ -6,6 +6,7 @@ public class UIConstant {
     public static final int WINDOW_MIN_HEIGHT = 500;
     public static final int WINDOW_MAX_WIDTH = WINDOW_MIN_WIDTH;
     public static final int WINDOW_MAX_HEIGHT = WINDOW_MIN_HEIGHT;
+    public static final int HEADER_INPUT_BOX_WIDTH = 350;
 
 
     public static final int SM_INSET = 8;

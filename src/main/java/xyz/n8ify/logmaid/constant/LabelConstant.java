@@ -16,7 +16,7 @@ public class LabelConstant {
 
 
     public static final String WARNING = "Warning";
-    public static final String WARNING_REQUIRED_DATA_MUST_BE_PROVIDED = "Required Data Must be Provided, Input-Output Directory is provide [%b], Keyword is provide (interested keyword or ad-hoc keyword) [%b]";
+    public static final String WARNING_REQUIRED_DATA_MUST_BE_PROVIDED = "Required Data Must be Provided, \nInput-Output Directory is provide [%b], Keyword is provide (interested keyword or ad-hoc keyword) [%b]";
     public static final String EXTRACT_IT_TEXT = "Extract it, Maid!";
 
 
