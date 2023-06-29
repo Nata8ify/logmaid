@@ -11,8 +11,10 @@ import xyz.n8ify.logmaid.component.CenterComponent;
 import xyz.n8ify.logmaid.component.HeaderComponent;
 import xyz.n8ify.logmaid.constant.CommonConstant;
 import xyz.n8ify.logmaid.constant.UIConstant;
+import xyz.n8ify.logmaid.enums.LogLevel;
+import xyz.n8ify.logmaid.utils.LogContentUtil;
 
-public class HelloApplication extends BaseApplication {
+public class LogmaidApplication extends BaseApplication {
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -47,6 +49,7 @@ public class HelloApplication extends BaseApplication {
         stage.setResizable(false);
         stage.sizeToScene();
         stage.show();
+        super.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Logmaid v%s is initialized", CommonConstant.VERSION)));
     }
 
     public static void main(String[] args) {

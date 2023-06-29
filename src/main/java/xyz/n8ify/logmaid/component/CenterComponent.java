@@ -7,7 +7,9 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import xyz.n8ify.logmaid.BaseApplication;
+import xyz.n8ify.logmaid.constant.CommonConstant;
 import xyz.n8ify.logmaid.constant.LabelConstant;
+import xyz.n8ify.logmaid.constant.StringConstant;
 import xyz.n8ify.logmaid.constant.UIConstant;
 import xyz.n8ify.logmaid.enums.Widget;
 import xyz.n8ify.logmaid.fatory.control.DefaultTabFactory;
@@ -15,15 +17,24 @@ import xyz.n8ify.logmaid.fatory.control.DefaultTextAreaFactory;
 
 public class CenterComponent extends AbstractComponent {
 
-    public static TabPane init(BaseApplication application) {
-        TabPane container = new TabPane();
+    public static VBox init(BaseApplication application) {
+        VBox container = new VBox(UIConstant.SM_INSET);
         container.setPadding(new Insets(UIConstant.M_INSET, 0, UIConstant.M_INSET, 0));
-        container.getTabs().addAll(
+
+        TabPane tp = new TabPane();
+        tp.getTabs().addAll(
                 initInterestedKeywordTab(),
                 initAdhocKeywordTab(),
                 initIgnoredKeywordTab(),
                 initGroupedThreadKeywordTab()
         );
+
+        TextArea taLog = DefaultTextAreaFactory.newInstance(Widget.LogTextArea, StringConstant.BROWSE);
+        taLog.setEditable(false);
+
+        container.getChildren().addAll(
+                tp,
+                taLog);
         return container;
     }
 

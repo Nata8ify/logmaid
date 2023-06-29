@@ -1,6 +1,5 @@
 package xyz.n8ify.logmaid.model;
 
-import xyz.n8ify.logmaid.storage.DataStorage;
 import xyz.n8ify.logmaid.utils.StringUtil;
 
 import java.util.List;
@@ -23,8 +22,13 @@ public class ExtractProperty {
     List<String> ignoredKeyWordValues;
     List<String> groupedThreadKeyWordValues;
 
+    private String inputLogDirPath = "";
+    private String outputLogDirPath = "";
 
-    public ExtractProperty(String rawInterestedKeywordString, String rawAdhocKeywordString, String rawIgnoredKeywordString, String rawGroupedThreadKeywordString) {
+
+    public ExtractProperty(String inputLogDirPath, String outputLogDirPath, String rawInterestedKeywordString, String rawAdhocKeywordString, String rawIgnoredKeywordString, String rawGroupedThreadKeywordString) {
+        this.inputLogDirPath = inputLogDirPath;
+        this.outputLogDirPath = outputLogDirPath;
         this.rawInterestedKeywordString = rawInterestedKeywordString;
         this.rawAdhocKeywordString = rawAdhocKeywordString;
         this.rawIgnoredKeywordString = rawIgnoredKeywordString;
@@ -33,6 +37,22 @@ public class ExtractProperty {
         this.adhocKeyWordValues = parseRawKeywordList(this.rawAdhocKeywordString);
         this.ignoredKeyWordValues = parseRawKeywordList(this.rawIgnoredKeywordString);
         this.groupedThreadKeyWordValues = parseRawKeywordList(this.rawGroupedThreadKeywordString);
+    }
+
+    public String getInputLogDirPath() {
+        return inputLogDirPath;
+    }
+
+    public void setInputLogDirPath(String inputLogDirPath) {
+        this.inputLogDirPath = inputLogDirPath;
+    }
+
+    public String getOutputLogDirPath() {
+        return outputLogDirPath;
+    }
+
+    public void setOutputLogDirPath(String outputLogDirPath) {
+        this.outputLogDirPath = outputLogDirPath;
     }
 
     public String getRawInterestedKeywordString() {
@@ -99,11 +119,15 @@ public class ExtractProperty {
     }
 
     public void replaceInterestedKeywordToAdHocKeyword() {
-        this.rawInterestedKeywordString = this.rawAdhocKeywordString;
+        this.interestedKeyWordValues = this.adhocKeyWordValues;
     }
 
     public boolean isContainIgnoredKeyword(String value) {
         return this.ignoredKeyWordValues.stream().anyMatch(value::contains);
+    }
+
+    public boolean isInputOutputDirectoryProvide() {
+        return StringUtil.isNotNullOrEmpty(this.inputLogDirPath) && StringUtil.isNotNullOrEmpty(this.outputLogDirPath);
     }
 
 }

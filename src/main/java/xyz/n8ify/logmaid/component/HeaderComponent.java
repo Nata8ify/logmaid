@@ -10,6 +10,7 @@ import xyz.n8ify.logmaid.config.AppConfig;
 import xyz.n8ify.logmaid.constant.LabelConstant;
 import xyz.n8ify.logmaid.constant.StringConstant;
 import xyz.n8ify.logmaid.constant.UIConstant;
+import xyz.n8ify.logmaid.enums.Widget;
 import xyz.n8ify.logmaid.fatory.control.DefaultTextFieldFactory;
 
 import java.io.File;
@@ -30,25 +31,20 @@ public class HeaderComponent extends AbstractComponent {
 
     private static HBox initInputDir(BaseApplication application) {
 
-        TextField tfLogInputDir = DefaultTextFieldFactory.newInstance(LabelConstant.INPUT_PATH_HINT);
+        TextField tfLogInputDir = DefaultTextFieldFactory.newInstance(LabelConstant.INPUT_PATH_HINT, Widget.InputLogDirectoryTextField.getId());
         tfLogInputDir.setMinWidth(350);
         Button btnBrowse = new Button();
         DirectoryChooser chooser = new DirectoryChooser();
 
         Optional.ofNullable(AppConfig.DEFAULT_INPUT_LOG_DIR_PATH).ifPresent(value -> {
-            application.onInputLogDirectorySelect(new File(value));
-            tfLogInputDir.setText(Optional.ofNullable(AppConfig.DEFAULT_INPUT_LOG_DIR_PATH).orElse(StringConstant.EMPTY));
+            tfLogInputDir.setText(Optional.of(AppConfig.DEFAULT_INPUT_LOG_DIR_PATH).orElse(StringConstant.EMPTY));
         });
         btnBrowse.setText(StringConstant.BROWSE);
         btnBrowse.setOnMouseClicked(mouseEvent -> {
             File destination = chooser.showDialog(application.getStage());
             if (destination != null) {
-                application.onInputLogDirectorySelect(destination);
-                tfLogInputDir.setText(application.getDataStorage().getInputLogDirPath());
+                tfLogInputDir.setText(destination.getAbsolutePath());
             }
-        });
-        tfLogInputDir.textProperty().addListener((observableValue, oldText, newText) -> {
-            application.onInputLogDirectorySelect(new File(newText));
         });
 
         HBox container = new HBox(UIConstant.SM_INSET);
@@ -61,25 +57,20 @@ public class HeaderComponent extends AbstractComponent {
 
     private static HBox initOutputDir(BaseApplication application) {
 
-        TextField tfLogOutputDir = DefaultTextFieldFactory.newInstance(LabelConstant.OUTPUT_PATH_HINT);
+        TextField tfLogOutputDir = DefaultTextFieldFactory.newInstance(LabelConstant.OUTPUT_PATH_HINT, Widget.OutputLogDirectoryTextField.getId());
         tfLogOutputDir.setMinWidth(350);
         Button btnBrowse = new Button();
         DirectoryChooser chooser = new DirectoryChooser();
 
         Optional.ofNullable(AppConfig.DEFAULT_OUTPUT_LOG_DIR_PATH).ifPresent(value -> {
-            application.onOutputLogDirectorySelect(new File(value));
-            tfLogOutputDir.setText(Optional.ofNullable(AppConfig.DEFAULT_OUTPUT_LOG_DIR_PATH).orElse(StringConstant.EMPTY));
+            tfLogOutputDir.setText(Optional.of(AppConfig.DEFAULT_OUTPUT_LOG_DIR_PATH).orElse(StringConstant.EMPTY));
         });
         btnBrowse.setText(StringConstant.BROWSE);
         btnBrowse.setOnMouseClicked(mouseEvent -> {
             File destination = chooser.showDialog(application.getStage());
             if (destination != null) {
-                application.onOutputLogDirectorySelect(destination);
-                tfLogOutputDir.setText(application.getDataStorage().getOutputLogDirPath());
+                tfLogOutputDir.setText(destination.getAbsolutePath());
             }
-        });
-        tfLogOutputDir.textProperty().addListener((observableValue, oldText, newText) -> {
-            application.onOutputLogDirectorySelect(new File(newText));
         });
 
         HBox container = new HBox(UIConstant.SM_INSET);

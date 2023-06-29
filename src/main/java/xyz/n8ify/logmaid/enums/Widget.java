@@ -6,6 +6,9 @@ public enum Widget {
     AdhocKeyWordTextArea("taAdhocKeyWord", "#taAdhocKeyWord"),
     IgnoredKeyWordTextArea("taIgnoredKeyWord", "#taIgnoredKeyWord"),
     GroupedThreadKeyWordTextArea("taGroupedThreadKeyWord", "#taGroupedThreadKeyWord"),
+    InputLogDirectoryTextField("tfInputLogDirectoryTextField", "#tfInputLogDirectoryTextField"),
+    OutputLogDirectoryTextField("tfOutputLogDirectoryTextField", "#tfOutputLogDirectoryTextField"),
+    LogTextArea("taLogTextArea", "#taLogTextArea"),
     ;
 
     Widget(String id, String qualifiedId) {

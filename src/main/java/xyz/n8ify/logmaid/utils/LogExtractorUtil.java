@@ -1,8 +1,9 @@
 package xyz.n8ify.logmaid.utils;
 
-import xyz.n8ify.logmaid.constant.StringConstant;
+import xyz.n8ify.logmaid.callback.ApplicationCallback;
+import xyz.n8ify.logmaid.callback.LogCallback;
+import xyz.n8ify.logmaid.enums.LogLevel;
 import xyz.n8ify.logmaid.model.ExtractProperty;
-import xyz.n8ify.logmaid.storage.DataStorage;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -11,21 +12,31 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static xyz.n8ify.logmaid.constant.StringConstant.COMMA;
 import static xyz.n8ify.logmaid.constant.StringConstant.NEW_LINE;
 
 public class LogExtractorUtil {
     private static final String OUTPUT_LOG_FILENAME_FORMAT = "%s_ExtractedLog.log";
 
-    public static void proceed(ExtractProperty extractProperty, DataStorage dataStorage) throws IOException {
+    public static void proceed(ExtractProperty extractProperty, LogCallback logCallback) throws IOException {
 
         /* Prepare file */
-        File inputDir = new File(dataStorage.getInputLogDirPath());
-        File outputDir = new File(dataStorage.getOutputLogDirPath());
+        File inputDir = new File(extractProperty.getInputLogDirPath());
+        File outputDir = new File(extractProperty.getOutputLogDirPath());
         List<File> logFiles = getLogFiles(inputDir);
 
+        if (!inputDir.exists()) {
+            logCallback.onLog(LogContentUtil.generate(LogLevel.ERROR, String.format("Input directory [%s] does not exists (Extraction abort)...", inputDir.getAbsolutePath())));
+            return;
+        }
+        if (!outputDir.exists()) {
+            logCallback.onLog(LogContentUtil.generate(LogLevel.ERROR, String.format("Output directory [%s] does not exists (Extraction abort)...", outputDir.getAbsolutePath())));
+            return;
+        }
+
         if (extractProperty.isAdHocKeywordProvided()) {
+            logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Ad-hoc keyword is provided... Extract with ad-hoc keyword(s) [%s]", String.join(COMMA, extractProperty.getAdhocKeywordList()))));
             extractProperty.replaceInterestedKeywordToAdHocKeyword();
         }
 
@@ -35,10 +46,15 @@ public class LogExtractorUtil {
             if (keyword.isEmpty()) continue;
 
             File extractedFile = FileUtil.createFile(outputDir, String.format(OUTPUT_LOG_FILENAME_FORMAT, keyword));
+            logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Create output extracted keyword file at [%s]", extractedFile.getAbsolutePath())));
+
             try (FileWriter writer = new FileWriter(extractedFile)) {
-                for (File logFile : logFiles) {
+                for (int i = 0; i < logFiles.size(); i++) {
+
+                    final File logFile = logFiles.get(i);
                     final String logFileName = logFile.getName();
                     writer.write(StringUtil.generateHeaderString(logFileName));
+                    logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Extracting keyword [%s] on log file [%s](%d of %d)... ", keyword, logFileName, i + 1, logFiles.size())));
 
                     List<String> lines = Files.readAllLines(logFile.toPath());
                     for (String line : lines) {
@@ -50,7 +66,9 @@ public class LogExtractorUtil {
                 }
                 writer.flush();
             }
+            logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Extraction with keyword [%s] finished", keyword)));
         }
+        logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, "Extraction completed"));
 
     }
 
