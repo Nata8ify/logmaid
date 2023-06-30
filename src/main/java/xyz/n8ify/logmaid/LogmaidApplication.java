@@ -12,17 +12,25 @@ import xyz.n8ify.logmaid.component.HeaderComponent;
 import xyz.n8ify.logmaid.constant.CommonConstant;
 import xyz.n8ify.logmaid.constant.UIConstant;
 import xyz.n8ify.logmaid.enums.LogLevel;
+import xyz.n8ify.logmaid.utils.DatabaseUtil;
 import xyz.n8ify.logmaid.utils.LogContentUtil;
+
+import java.sql.SQLException;
 
 public class LogmaidApplication extends BaseApplication {
 
     @Override
     public void start(Stage stage) throws Exception {
         super.start(stage);
+        initialProcess();
         initialStage(stage, instatiatePanel());
     }
 
-    private Panel instatiatePanel() {
+    private void initialProcess() {
+        DatabaseUtil.inititial();
+    }
+
+    private Panel instatiatePanel() throws SQLException {
         Panel panel = new Panel(CommonConstant.APP_NAME);
         panel.getStyleClass().add("panel-default");
 

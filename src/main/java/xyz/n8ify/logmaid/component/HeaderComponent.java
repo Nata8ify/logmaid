@@ -14,14 +14,18 @@ import xyz.n8ify.logmaid.constant.StringConstant;
 import xyz.n8ify.logmaid.constant.UIConstant;
 import xyz.n8ify.logmaid.enums.Widget;
 import xyz.n8ify.logmaid.fatory.control.DefaultTextFieldFactory;
+import xyz.n8ify.logmaid.model.Preset;
+import xyz.n8ify.logmaid.utils.DatabaseUtil;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class HeaderComponent extends AbstractComponent {
 
-    public static VBox init(BaseApplication application) {
+    public static VBox init(BaseApplication application) throws SQLException {
 
         VBox container = new VBox(UIConstant.M_INSET);
         container.getChildren().addAll(
@@ -34,8 +38,11 @@ public class HeaderComponent extends AbstractComponent {
     }
 
 
-    private static Pane initPresetOption(BaseApplication application) {
-        ComboBox<String> cb = new ComboBox<>(FXCollections.observableArrayList("Default", "1"));
+    private static Pane initPresetOption(BaseApplication application) throws SQLException {
+        List<String> presets = DatabaseUtil.loadPresets().stream()
+                .map(Preset::getName)
+                .toList();
+        ComboBox<String> cb = new ComboBox<>(FXCollections.observableArrayList(presets));
         HBox hb = new HBox(cb);
         cb.getSelectionModel().select(0);
         cb.setMinWidth(UIConstant.HEADER_INPUT_BOX_WIDTH);

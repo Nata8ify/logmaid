@@ -3,6 +3,9 @@ module xyz.n8ify.logmaid {
     requires javafx.fxml;
 
     requires org.kordamp.bootstrapfx.core;
+    requires org.xerial.sqlitejdbc;
+    requires com.google.gson;
+    requires java.sql;
 
     opens xyz.n8ify.logmaid to javafx.fxml;
     exports xyz.n8ify.logmaid;
