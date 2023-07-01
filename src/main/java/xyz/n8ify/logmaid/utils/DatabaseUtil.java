@@ -11,7 +11,9 @@ public class DatabaseUtil {
 
     private static Connection connection = null;
 
-    public static void inititial() {
+    private static Gson gson = new Gson();
+
+    public static void initial() {
 
         try {
 
@@ -19,7 +21,7 @@ public class DatabaseUtil {
 
             try (Statement stm = connection.createStatement()) {
                 final String createTable = "CREATE TABLE IF NOT EXISTS PRESET(" +
-                        " ID INT PRIMARY KEY NOT NULL," +
+                        " ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
                         " PRESET_NAME CHAR(128) NOT NULL," +
                         " PRESET_VALUE TEXT NOT NULL" +
                         " )";
@@ -30,12 +32,8 @@ public class DatabaseUtil {
                     if (!resultSet.next()) {
                         final String createDefaultPreset = "INSERT INTO PRESET VALUES(1, 'Default', '')";
                         stm.executeUpdate(createDefaultPreset);
-                        final String createAddPreset = "INSERT INTO PRESET VALUES(99999, 'Add Preset...', '')";
-                        stm.executeUpdate(createAddPreset);
                     }
                 }
-
-                stm.close();
             }
 
         } catch (SQLException e) {
@@ -66,5 +64,13 @@ public class DatabaseUtil {
         return presets;
     }
 
+    public static void insertPreset(Preset preset) throws SQLException {
+        final String sql = "INSERT INTO PRESET (PRESET_NAME, PRESET_VALUE) VALUES(?, ?)";
+        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+            stm.setString(1, preset.getName());
+            stm.setString(2, gson.toJson(preset.getConfig()));
+            stm.executeUpdate();
+        }
+    }
 
 }

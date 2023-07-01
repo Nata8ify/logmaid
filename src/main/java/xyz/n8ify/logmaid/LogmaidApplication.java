@@ -12,10 +12,13 @@ import xyz.n8ify.logmaid.component.HeaderComponent;
 import xyz.n8ify.logmaid.constant.CommonConstant;
 import xyz.n8ify.logmaid.constant.UIConstant;
 import xyz.n8ify.logmaid.enums.LogLevel;
+import xyz.n8ify.logmaid.model.ExtractInfo;
+import xyz.n8ify.logmaid.model.Preset;
 import xyz.n8ify.logmaid.utils.DatabaseUtil;
 import xyz.n8ify.logmaid.utils.LogContentUtil;
 
 import java.sql.SQLException;
+import java.util.List;
 
 public class LogmaidApplication extends BaseApplication {
 
@@ -26,8 +29,13 @@ public class LogmaidApplication extends BaseApplication {
         initialStage(stage, instatiatePanel());
     }
 
-    private void initialProcess() {
-        DatabaseUtil.inititial();
+    private void initialProcess() throws SQLException {
+        DatabaseUtil.initial();
+
+        final List<Preset> presets = DatabaseUtil.loadPresets();
+        if (!presets.isEmpty()) {
+            ExtractInfo.setInstance(presets.get(0));
+        }
     }
 
     private Panel instatiatePanel() throws SQLException {

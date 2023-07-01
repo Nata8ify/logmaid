@@ -11,10 +11,8 @@ import xyz.n8ify.logmaid.callback.ApplicationCallback;
 import xyz.n8ify.logmaid.callback.LogCallback;
 import xyz.n8ify.logmaid.constant.LabelConstant;
 import xyz.n8ify.logmaid.constant.StringConstant;
-import xyz.n8ify.logmaid.enums.LogLevel;
 import xyz.n8ify.logmaid.enums.Widget;
-import xyz.n8ify.logmaid.model.ExtractProperty;
-import xyz.n8ify.logmaid.utils.LogContentUtil;
+import xyz.n8ify.logmaid.model.ExtractInfo;
 import xyz.n8ify.logmaid.utils.LogExtractorUtil;
 
 public class BaseApplication extends Application implements ApplicationCallback, LogCallback {
@@ -44,17 +42,17 @@ public class BaseApplication extends Application implements ApplicationCallback,
         TextArea taAdhocKeyWord = (TextArea) stage.getScene().lookup(Widget.AdhocKeyWordTextArea.getQualifiedId());
         TextArea taIgnoredKeyWord = (TextArea) stage.getScene().lookup(Widget.IgnoredKeyWordTextArea.getQualifiedId());
         TextArea taGroupedThreadKeyWord = (TextArea) stage.getScene().lookup(Widget.GroupedThreadKeyWordTextArea.getQualifiedId());
-        ExtractProperty extractProperty = new ExtractProperty(inputDirectoryPath, outputDirectoryPath
+        ExtractInfo.setInstance(new ExtractInfo(inputDirectoryPath, outputDirectoryPath
                 , taInterestedKeyWord.getText()
                 , taAdhocKeyWord.getText()
                 , taIgnoredKeyWord.getText()
-                , taGroupedThreadKeyWord.getText());
+                , taGroupedThreadKeyWord.getText()));
 
         try {
-            boolean isInputOutputDirectoryProvide = extractProperty.isInputOutputDirectoryProvide();
-            boolean isRequiredDataProvided = extractProperty.isRequiredDataProvided();
+            boolean isInputOutputDirectoryProvide = ExtractInfo.getInstance().isInputOutputDirectoryProvide();
+            boolean isRequiredDataProvided = ExtractInfo.getInstance().isRequiredDataProvided();
             if (isInputOutputDirectoryProvide && isRequiredDataProvided) {
-                LogExtractorUtil.proceed(extractProperty, this);
+                LogExtractorUtil.proceed(ExtractInfo.getInstance(), this);
             } else {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setHeaderText(LabelConstant.WARNING);

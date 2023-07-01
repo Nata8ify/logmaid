@@ -14,6 +14,8 @@ public class LabelConstant {
     public static final String IGNORED_KEYWORD_INPUT_HINT = "List of Ignored Keyword(s)... (Split with new line)";
     public static final String GROUPED_THREAD_INPUT_HINT = "List of Grouped Thread Keyword(s)... (Split with new line)";
 
+    public static final String ADD_PRESET = "Add New Preset...";
+
 
     public static final String WARNING = "Warning";
     public static final String WARNING_REQUIRED_DATA_MUST_BE_PROVIDED = "Required Data Must be Provided, \nInput-Output Directory is provide [%b], Keyword is provide (interested keyword or ad-hoc keyword) [%b]";

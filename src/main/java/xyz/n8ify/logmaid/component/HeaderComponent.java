@@ -1,10 +1,7 @@
 package xyz.n8ify.logmaid.component;
 
 import javafx.collections.FXCollections;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
 import xyz.n8ify.logmaid.BaseApplication;
@@ -12,16 +9,21 @@ import xyz.n8ify.logmaid.config.AppConfig;
 import xyz.n8ify.logmaid.constant.LabelConstant;
 import xyz.n8ify.logmaid.constant.StringConstant;
 import xyz.n8ify.logmaid.constant.UIConstant;
+import xyz.n8ify.logmaid.enums.LogLevel;
 import xyz.n8ify.logmaid.enums.Widget;
 import xyz.n8ify.logmaid.fatory.control.DefaultTextFieldFactory;
+import xyz.n8ify.logmaid.model.ExtractInfo;
 import xyz.n8ify.logmaid.model.Preset;
 import xyz.n8ify.logmaid.utils.DatabaseUtil;
+import xyz.n8ify.logmaid.utils.LogContentUtil;
+import xyz.n8ify.logmaid.utils.StringUtil;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 public class HeaderComponent extends AbstractComponent {
 
@@ -39,15 +41,25 @@ public class HeaderComponent extends AbstractComponent {
 
 
     private static Pane initPresetOption(BaseApplication application) throws SQLException {
-        List<String> presets = DatabaseUtil.loadPresets().stream()
+        List<String> presets = new ArrayList<>(DatabaseUtil.loadPresets().stream()
                 .map(Preset::getName)
-                .toList();
+                .toList());
+        presets.add(LabelConstant.ADD_PRESET);
         ComboBox<String> cb = new ComboBox<>(FXCollections.observableArrayList(presets));
         HBox hb = new HBox(cb);
         cb.getSelectionModel().select(0);
         cb.setMinWidth(UIConstant.HEADER_INPUT_BOX_WIDTH);
         cb.setOnAction(actionEvent -> {
-            application.onPresetSelect(cb.getValue());
+            if (LabelConstant.ADD_PRESET.equals(cb.getValue())) {
+                addPreset(application, addPresetName -> {
+                    presets.add(presets.size() - 1, addPresetName);
+                    cb.setItems(FXCollections.observableArrayList(presets));
+                    cb.getSelectionModel().select(presets.size() > 2 ? presets.size() - 2 : 0); /* Selected latest item (not include add preset option) */
+                    return null;
+                });
+            } else {
+                application.onPresetSelect(cb.getValue());
+            }
         });
 
         Button btnSavePreset = new Button();
@@ -65,12 +77,15 @@ public class HeaderComponent extends AbstractComponent {
 
         TextField tfLogInputDir = DefaultTextFieldFactory.newInstance(LabelConstant.INPUT_PATH_HINT, Widget.InputLogDirectoryTextField.getId());
         tfLogInputDir.setMinWidth(UIConstant.HEADER_INPUT_BOX_WIDTH);
-        Button btnBrowse = new Button();
         DirectoryChooser chooser = new DirectoryChooser();
 
-        Optional.ofNullable(AppConfig.DEFAULT_INPUT_LOG_DIR_PATH).ifPresent(value -> {
-            tfLogInputDir.setText(Optional.of(AppConfig.DEFAULT_INPUT_LOG_DIR_PATH).orElse(StringConstant.EMPTY));
-        });
+        if (StringUtil.isNotNullOrEmpty(ExtractInfo.getInstance().getInputLogDirPath())) {
+            tfLogInputDir.setText(ExtractInfo.getInstance().getInputLogDirPath());
+        } else {
+            tfLogInputDir.setText(Optional.ofNullable(AppConfig.DEFAULT_INPUT_LOG_DIR_PATH).orElse(StringConstant.EMPTY));
+        }
+
+        Button btnBrowse = new Button();
         btnBrowse.setText(StringConstant.BROWSE);
         btnBrowse.setOnMouseClicked(mouseEvent -> {
             File destination = chooser.showDialog(application.getStage());
@@ -91,12 +106,15 @@ public class HeaderComponent extends AbstractComponent {
 
         TextField tfLogOutputDir = DefaultTextFieldFactory.newInstance(LabelConstant.OUTPUT_PATH_HINT, Widget.OutputLogDirectoryTextField.getId());
         tfLogOutputDir.setMinWidth(UIConstant.HEADER_INPUT_BOX_WIDTH);
-        Button btnBrowse = new Button();
         DirectoryChooser chooser = new DirectoryChooser();
 
-        Optional.ofNullable(AppConfig.DEFAULT_OUTPUT_LOG_DIR_PATH).ifPresent(value -> {
-            tfLogOutputDir.setText(Optional.of(AppConfig.DEFAULT_OUTPUT_LOG_DIR_PATH).orElse(StringConstant.EMPTY));
-        });
+        if (StringUtil.isNotNullOrEmpty(ExtractInfo.getInstance().getOutputLogDirPath())) {
+            tfLogOutputDir.setText(ExtractInfo.getInstance().getOutputLogDirPath());
+        } else {
+            tfLogOutputDir.setText(Optional.ofNullable(AppConfig.DEFAULT_OUTPUT_LOG_DIR_PATH).orElse(StringConstant.EMPTY));
+        }
+
+        Button btnBrowse = new Button();
         btnBrowse.setText(StringConstant.BROWSE);
         btnBrowse.setOnMouseClicked(mouseEvent -> {
             File destination = chooser.showDialog(application.getStage());
@@ -112,5 +130,37 @@ public class HeaderComponent extends AbstractComponent {
         );
         return container;
     }
+
+    /* ----- */
+    private static void addPreset(BaseApplication application, Function<String, Void> onSuccess) {
+        try {
+
+            TextInputDialog tidNamePreset = new TextInputDialog();
+            tidNamePreset.setHeaderText(LabelConstant.ADD_PRESET);
+            String addPresetName = tidNamePreset.showAndWait().orElse(StringConstant.EMPTY);
+            if (!StringUtil.isNotNullOrEmpty(addPresetName)) {
+                return;
+            }
+
+            final Preset preset = new Preset();
+            preset.setName(addPresetName);
+
+            final Preset.Config config = new Preset.Config();
+            final ExtractInfo extractInfo = ExtractInfo.getInstance();
+            config.setInputLogDirectory(extractInfo.getInputLogDirPath());
+            config.setOutputLogDirectory(extractInfo.getOutputLogDirPath());
+            config.setInterestedKeyWordValues(extractInfo.getInterestedKeywordList());
+            config.setAdhocKeyWordValues(extractInfo.getAdhocKeywordList());
+            config.setIgnoredKeyWordValues(extractInfo.getIgnoredKeywordList());
+            config.setGroupedThreadKeyWordValues(extractInfo.getGroupedThreadKeywordList());
+            preset.setConfig(config);
+            DatabaseUtil.insertPreset(preset);
+            onSuccess.apply(addPresetName);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
 
 }

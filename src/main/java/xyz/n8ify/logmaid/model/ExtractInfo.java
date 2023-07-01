@@ -1,14 +1,38 @@
 package xyz.n8ify.logmaid.model;
 
+import xyz.n8ify.logmaid.constant.StringConstant;
 import xyz.n8ify.logmaid.utils.StringUtil;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static xyz.n8ify.logmaid.constant.StringConstant.NEW_LINE;
 
-public class ExtractProperty {
+public class ExtractInfo {
+
+    private static ExtractInfo instance = null;
+
+    public static void setInstance(Preset preset) {
+        Preset.Config presetConfig = preset.getConfig();
+        instance = new ExtractInfo(
+                presetConfig != null ? presetConfig.getInputLogDirectory() : StringConstant.EMPTY,
+                presetConfig != null ? presetConfig.getOutputLogDirectory() : StringConstant.EMPTY,
+                presetConfig != null ? presetConfig.getInterestedKeyWordValues() : Collections.<String>emptyList(),
+                presetConfig != null ? presetConfig.getAdhocKeyWordValues() : Collections.<String>emptyList(),
+                presetConfig != null ? presetConfig.getIgnoredKeyWordValues() : Collections.<String>emptyList(),
+                presetConfig != null ? presetConfig.getGroupedThreadKeyWordValues() : Collections.<String>emptyList());
+    }
+
+    public static void setInstance(ExtractInfo extractInfo) {
+        instance = extractInfo;
+    }
+
+    public static ExtractInfo getInstance() {
+        return instance;
+    }
 
     private final String IGNORED_SIGN = "#";
 
@@ -25,8 +49,20 @@ public class ExtractProperty {
     private String inputLogDirPath = "";
     private String outputLogDirPath = "";
 
+    public ExtractInfo() {
+        this.inputLogDirPath = StringConstant.EMPTY;
+        this.outputLogDirPath = StringConstant.EMPTY;
+        this.rawInterestedKeywordString = StringConstant.EMPTY;
+        this.rawAdhocKeywordString = StringConstant.EMPTY;
+        this.rawIgnoredKeywordString = StringConstant.EMPTY;
+        this.rawGroupedThreadKeywordString = StringConstant.EMPTY;
+        this.interestedKeyWordValues = Collections.emptyList();
+        this.adhocKeyWordValues = Collections.emptyList();
+        this.ignoredKeyWordValues = Collections.emptyList();
+        this.groupedThreadKeyWordValues = Collections.emptyList();
+    }
 
-    public ExtractProperty(String inputLogDirPath, String outputLogDirPath, String rawInterestedKeywordString, String rawAdhocKeywordString, String rawIgnoredKeywordString, String rawGroupedThreadKeywordString) {
+    public ExtractInfo(String inputLogDirPath, String outputLogDirPath, String rawInterestedKeywordString, String rawAdhocKeywordString, String rawIgnoredKeywordString, String rawGroupedThreadKeywordString) {
         this.inputLogDirPath = inputLogDirPath;
         this.outputLogDirPath = outputLogDirPath;
         this.rawInterestedKeywordString = rawInterestedKeywordString;
@@ -37,6 +73,15 @@ public class ExtractProperty {
         this.adhocKeyWordValues = parseRawKeywordList(this.rawAdhocKeywordString);
         this.ignoredKeyWordValues = parseRawKeywordList(this.rawIgnoredKeywordString);
         this.groupedThreadKeyWordValues = parseRawKeywordList(this.rawGroupedThreadKeywordString);
+    }
+
+    public ExtractInfo(String inputLogDirPath, String outputLogDirPath, List<String> interestedKeyWordValues, List<String> adhocKeyWordValues, List<String> ignoredKeyWordValues, List<String> groupedThreadKeyWordValues) {
+        this.interestedKeyWordValues = interestedKeyWordValues;
+        this.adhocKeyWordValues = adhocKeyWordValues;
+        this.ignoredKeyWordValues = ignoredKeyWordValues;
+        this.groupedThreadKeyWordValues = groupedThreadKeyWordValues;
+        this.inputLogDirPath = inputLogDirPath;
+        this.outputLogDirPath = outputLogDirPath;
     }
 
     public String getInputLogDirPath() {

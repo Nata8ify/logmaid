@@ -1,9 +1,8 @@
 package xyz.n8ify.logmaid.utils;
 
-import xyz.n8ify.logmaid.callback.ApplicationCallback;
 import xyz.n8ify.logmaid.callback.LogCallback;
 import xyz.n8ify.logmaid.enums.LogLevel;
-import xyz.n8ify.logmaid.model.ExtractProperty;
+import xyz.n8ify.logmaid.model.ExtractInfo;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -19,11 +18,11 @@ import static xyz.n8ify.logmaid.constant.StringConstant.NEW_LINE;
 public class LogExtractorUtil {
     private static final String OUTPUT_LOG_FILENAME_FORMAT = "%s_ExtractedLog.log";
 
-    public static void proceed(ExtractProperty extractProperty, LogCallback logCallback) throws IOException {
+    public static void proceed(ExtractInfo extractInfo, LogCallback logCallback) throws IOException {
 
         /* Prepare file */
-        File inputDir = new File(extractProperty.getInputLogDirPath());
-        File outputDir = new File(extractProperty.getOutputLogDirPath());
+        File inputDir = new File(extractInfo.getInputLogDirPath());
+        File outputDir = new File(extractInfo.getOutputLogDirPath());
         List<File> logFiles = getLogFiles(inputDir);
 
         if (!inputDir.exists()) {
@@ -35,13 +34,13 @@ public class LogExtractorUtil {
             return;
         }
 
-        if (extractProperty.isAdHocKeywordProvided()) {
-            logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Ad-hoc keyword is provided... Extract with ad-hoc keyword(s) [%s]", String.join(COMMA, extractProperty.getAdhocKeywordList()))));
-            extractProperty.replaceInterestedKeywordToAdHocKeyword();
+        if (extractInfo.isAdHocKeywordProvided()) {
+            logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Ad-hoc keyword is provided... Extract with ad-hoc keyword(s) [%s]", String.join(COMMA, extractInfo.getAdhocKeywordList()))));
+            extractInfo.replaceInterestedKeywordToAdHocKeyword();
         }
 
         /* Iterate extract */
-        for (String keyword : extractProperty.getInterestedKeywordList()) {
+        for (String keyword : extractInfo.getInterestedKeywordList()) {
 
             if (keyword.isEmpty()) continue;
 
@@ -58,7 +57,7 @@ public class LogExtractorUtil {
 
                     List<String> lines = Files.readAllLines(logFile.toPath());
                     for (String line : lines) {
-                        if (!extractProperty.isContainIgnoredKeyword(line) && line.contains(keyword)) {
+                        if (!extractInfo.isContainIgnoredKeyword(line) && line.contains(keyword)) {
                             writer.write(line);
                             writer.write(NEW_LINE);
                         }
