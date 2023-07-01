@@ -97,4 +97,12 @@ public class DatabaseUtil {
 
     }
 
+    public static void deletePresetByName(String presetName) throws SQLException {
+        final String sql = "DELETE FROM PRESET WHERE PRESET_NAME = ?";
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setString(1, presetName);
+            pstm.executeUpdate();
+        }
+    }
+
 }

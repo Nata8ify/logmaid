@@ -73,10 +73,28 @@ public class HeaderComponent extends AbstractComponent {
             });
         });
 
+        Button btnDeletePreset = new Button();
+        btnDeletePreset.setText(StringConstant.TRASH);
+        btnDeletePreset.setOnMouseClicked(event -> {
+            int removeIndex = cb.getSelectionModel().getSelectedIndex();
+            if (removeIndex == 0) {
+                application.onLog(LogContentUtil.generate(LogLevel.WARN, "Default preset cannot be deleted"));
+                return;
+            }
+            deletePreset(application, deletePresetName -> {
+                presets.remove(removeIndex);
+                cb.setItems(FXCollections.observableArrayList(presets));
+                application.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Preset [%s] was deleted", deletePresetName)));
+                cb.getSelectionModel().select(removeIndex - 1);
+                return null;
+            });
+        });
+
         HBox container = new HBox(UIConstant.SM_INSET);
         container.getChildren().addAll(
                 hb,
-                btnSavePreset
+                btnSavePreset,
+                btnDeletePreset
         );
         return container;
     }
@@ -171,4 +189,13 @@ public class HeaderComponent extends AbstractComponent {
         }
     }
 
+    private static void deletePreset(BaseApplication application, Function<String, Void> onSuccess) {
+        try {
+            String deletePresetName = application.<ComboBox<String>>findByWidget(Widget.PresetComboBox).getValue();
+            DatabaseUtil.deletePresetByName(deletePresetName);
+            onSuccess.apply(deletePresetName);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
