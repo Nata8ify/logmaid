@@ -8,6 +8,15 @@ public class Preset {
     private String name;
     private Config config;
 
+    public Preset() {
+    }
+
+    public Preset(int id, String name, Config config) {
+        this.id = id;
+        this.name = name;
+        this.config = config;
+    }
+
     public int getId() {
         return id;
     }

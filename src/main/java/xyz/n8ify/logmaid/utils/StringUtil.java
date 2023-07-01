@@ -25,8 +25,7 @@ public class StringUtil {
 
     public static String generateHeaderString(String header) {
         StringBuilder builder = new StringBuilder();
-        builder.append("\n------------------------------------------------------------------------------------------");
-        builder.append(String.format("\n---- %s \n", header));
+        builder.append(String.format("%s\n", header));
         return builder.toString();
     }
 

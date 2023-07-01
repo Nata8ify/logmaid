@@ -25,19 +25,21 @@ public class LogmaidApplication extends BaseApplication {
     @Override
     public void start(Stage stage) throws Exception {
         super.start(stage);
-        initialProcess();
+        initialPreProcess();
         initialStage(stage, instatiatePanel());
+        initialPostProcess();
     }
 
-    private void initialProcess() throws SQLException {
+    private void initialPreProcess() throws SQLException {
         DatabaseUtil.initial();
-
         final List<Preset> presets = DatabaseUtil.loadPresets();
         if (!presets.isEmpty()) {
             ExtractInfo.setInstance(presets.get(0));
         }
+    }
 
-
+    private void initialPostProcess() throws SQLException {
+        refreshWidget();
     }
 
     private Panel instatiatePanel() throws SQLException {

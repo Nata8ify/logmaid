@@ -48,20 +48,36 @@ public class DatabaseUtil {
             final String sql = "SELECT * FROM PRESET";
             try (ResultSet rs = stm.executeQuery(sql)) {
                 while (rs.next()) {
-                    Preset preset = new Preset();
-                    preset.setId(rs.getInt(1));
-                    preset.setName(rs.getString(2));
-
-                    String rawConfig = rs.getString(3);
-                    if (StringUtil.isNotNullOrEmpty(rawConfig)) {
-                        Preset.Config config = new Gson().fromJson(rs.getString(3), Preset.Config.class);
-                        preset.setConfig(config);
-                    }
-                    presets.add(preset);
+                    presets.add(getPresetFromResultSet(rs));
                 }
             }
         }
         return presets;
+    }
+    public static Preset loadPresetByName(String presetName) throws SQLException {
+        final String sql = "SELECT * FROM PRESET WHERE PRESET_NAME = ?";
+        try (PreparedStatement pstm = connection.prepareStatement(sql)) {
+            pstm.setString(1, presetName);
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) {
+                    return getPresetFromResultSet(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    public static List<String> loadPresetNames() throws SQLException {
+        List<String> presetNames = new ArrayList<>();
+        try (Statement stm = connection.createStatement()) {
+            final String sql = "SELECT PRESET_NAME FROM PRESET";
+            try (ResultSet rs = stm.executeQuery(sql)) {
+                while (rs.next()) {
+                    presetNames.add(rs.getString(1));
+                }
+            }
+        }
+        return presetNames;
     }
 
     public static void upsertPreset(Preset preset) throws SQLException {
@@ -103,6 +119,19 @@ public class DatabaseUtil {
             pstm.setString(1, presetName);
             pstm.executeUpdate();
         }
+    }
+
+    /* --- Helper function --- */
+    private static Preset getPresetFromResultSet(ResultSet rs) throws SQLException {
+        Preset preset = new Preset();
+        preset.setId(rs.getInt(1));
+        preset.setName(rs.getString(2));
+        String rawConfig = rs.getString(3);
+        if (StringUtil.isNotNullOrEmpty(rawConfig)) {
+            Preset.Config config = new Gson().fromJson(rs.getString(3), Preset.Config.class);
+            preset.setConfig(config);
+        }
+        return preset;
     }
 
 }

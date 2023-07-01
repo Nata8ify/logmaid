@@ -41,9 +41,7 @@ public class HeaderComponent extends AbstractComponent {
 
 
     private static Pane initPresetOption(BaseApplication application) throws SQLException {
-        List<String> presets = new ArrayList<>(DatabaseUtil.loadPresets().stream()
-                .map(Preset::getName)
-                .toList());
+        List<String> presets = new ArrayList<>(DatabaseUtil.loadPresetNames());
         presets.add(LabelConstant.ADD_PRESET);
         ComboBox<String> cb = new ComboBox<>(FXCollections.observableArrayList(presets));
         cb.setId(Widget.PresetComboBox.getId());
@@ -55,10 +53,10 @@ public class HeaderComponent extends AbstractComponent {
                 addPreset(application, addPresetName -> {
                     presets.add(presets.size() - 1, addPresetName);
                     cb.setItems(FXCollections.observableArrayList(presets));
-                    cb.getSelectionModel().select(presets.size() > 2 ? presets.size() - 2 : 0); /* Selected latest item (not include add preset option) */
                     application.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Preset [%s] was created", addPresetName)));
                     return null;
                 });
+                cb.getSelectionModel().select(presets.size() > 2 ? presets.size() - 2 : 0); /* Selected latest item (not include add preset option) */
             } else {
                 application.onPresetSelect(cb.getValue());
             }
@@ -67,6 +65,7 @@ public class HeaderComponent extends AbstractComponent {
         Button btnSavePreset = new Button();
         btnSavePreset.setText(StringConstant.SAVE);
         btnSavePreset.setOnMouseClicked(event -> {
+            application.refreshExtractInfo();
             savePreset(application, preset -> {
                 application.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Preset [%s] was saved", preset.getName())));
                 return null;

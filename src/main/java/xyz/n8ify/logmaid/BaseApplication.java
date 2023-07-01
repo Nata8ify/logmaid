@@ -9,8 +9,12 @@ import xyz.n8ify.logmaid.callback.ApplicationCallback;
 import xyz.n8ify.logmaid.callback.LogCallback;
 import xyz.n8ify.logmaid.constant.LabelConstant;
 import xyz.n8ify.logmaid.constant.StringConstant;
+import xyz.n8ify.logmaid.enums.LogLevel;
 import xyz.n8ify.logmaid.enums.Widget;
 import xyz.n8ify.logmaid.model.ExtractInfo;
+import xyz.n8ify.logmaid.model.Preset;
+import xyz.n8ify.logmaid.utils.DatabaseUtil;
+import xyz.n8ify.logmaid.utils.LogContentUtil;
 import xyz.n8ify.logmaid.utils.LogExtractorUtil;
 
 public class BaseApplication extends Application implements ApplicationCallback, LogCallback {
@@ -31,26 +35,24 @@ public class BaseApplication extends Application implements ApplicationCallback,
     }
 
     @Override
-    public void onPresetSelect(String preset) {
-        System.out.println(preset);
+    public void onPresetSelect(String presetName) {
+        try {
+            final Preset preset = DatabaseUtil.loadPresetByName(presetName);
+            if (preset != null) {
+                ExtractInfo.setInstance(preset);
+                this.refreshWidget();
+                this.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Preset [%s] was selected...", presetName)));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            this.onLog(LogContentUtil.generate(LogLevel.ERROR, e.getMessage()));
+        }
     }
 
     @Override
     public void onExtractClick(MouseEvent event) {
-        String inputDirectoryPath = ((TextField) stage.getScene().lookup(Widget.InputLogDirectoryTextField.getQualifiedId())).getText();
-        String outputDirectoryPath = ((TextField) stage.getScene().lookup(Widget.OutputLogDirectoryTextField.getQualifiedId())).getText();
-
-        TextArea taInterestedKeyWord = (TextArea) stage.getScene().lookup(Widget.InterestedKeyWordTextArea.getQualifiedId());
-        TextArea taAdhocKeyWord = (TextArea) stage.getScene().lookup(Widget.AdhocKeyWordTextArea.getQualifiedId());
-        TextArea taIgnoredKeyWord = (TextArea) stage.getScene().lookup(Widget.IgnoredKeyWordTextArea.getQualifiedId());
-        TextArea taGroupedThreadKeyWord = (TextArea) stage.getScene().lookup(Widget.GroupedThreadKeyWordTextArea.getQualifiedId());
-        ExtractInfo.setInstance(new ExtractInfo(inputDirectoryPath, outputDirectoryPath
-                , taInterestedKeyWord.getText()
-                , taAdhocKeyWord.getText()
-                , taIgnoredKeyWord.getText()
-                , taGroupedThreadKeyWord.getText()));
-
         try {
+            this.refreshExtractInfo();
             boolean isInputOutputDirectoryProvide = ExtractInfo.getInstance().isInputOutputDirectoryProvide();
             boolean isRequiredDataProvided = ExtractInfo.getInstance().isRequiredDataProvided();
             if (isInputOutputDirectoryProvide && isRequiredDataProvided) {
@@ -73,4 +75,27 @@ public class BaseApplication extends Application implements ApplicationCallback,
         taLogTextArea.appendText(StringConstant.NEW_LINE + log);
     }
 
+    /* --- Helper function --- */
+    public void refreshExtractInfo() {
+        String inputDirectoryPath = this.<TextField>findByWidget((Widget.InputLogDirectoryTextField)).getText();
+        String outputDirectoryPath = this.<TextField>findByWidget((Widget.OutputLogDirectoryTextField)).getText();
+        String interestedKeyWord = this.<TextArea>findByWidget((Widget.InterestedKeyWordTextArea)).getText();
+        String adhocKeyWord = this.<TextArea>findByWidget((Widget.AdhocKeyWordTextArea)).getText();
+        String ignoredKeyWord = this.<TextArea>findByWidget((Widget.IgnoredKeyWordTextArea)).getText();
+        String groupedThreadKeyWord = this.<TextArea>findByWidget((Widget.GroupedThreadKeyWordTextArea)).getText();
+        ExtractInfo.setInstance(new ExtractInfo(inputDirectoryPath, outputDirectoryPath
+                , interestedKeyWord
+                , adhocKeyWord
+                , ignoredKeyWord
+                , groupedThreadKeyWord));
+    }
+    public void refreshWidget() {
+        ExtractInfo extractInfo = ExtractInfo.getInstance();
+        this.<TextField>findByWidget((Widget.InputLogDirectoryTextField)).setText(extractInfo.getInputLogDirPath());
+        this.<TextField>findByWidget((Widget.OutputLogDirectoryTextField)).setText(extractInfo.getOutputLogDirPath());
+        this.<TextArea>findByWidget((Widget.InterestedKeyWordTextArea)).setText(extractInfo.getRawInterestedKeywordString());
+        this.<TextArea>findByWidget((Widget.AdhocKeyWordTextArea)).setText(extractInfo.getRawAdhocKeywordString());
+        this.<TextArea>findByWidget((Widget.IgnoredKeyWordTextArea)).setText(extractInfo.getRawIgnoredKeywordString());
+        this.<TextArea>findByWidget((Widget.GroupedThreadKeyWordTextArea)).setText(extractInfo.getRawGroupedThreadKeywordString());
+    }
 }

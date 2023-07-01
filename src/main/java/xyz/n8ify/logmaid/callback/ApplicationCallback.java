@@ -5,7 +5,7 @@ import javafx.scene.input.MouseEvent;
 import java.io.File;
 
 public interface ApplicationCallback {
-    void onPresetSelect(String preset);
+    void onPresetSelect(String presetName);
     void onExtractClick(MouseEvent event);
 
 }
