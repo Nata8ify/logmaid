@@ -8,7 +8,8 @@ public enum Widget {
     GroupedThreadKeyWordTextArea("taGroupedThreadKeyWord", "#taGroupedThreadKeyWord"),
     InputLogDirectoryTextField("tfInputLogDirectoryTextField", "#tfInputLogDirectoryTextField"),
     OutputLogDirectoryTextField("tfOutputLogDirectoryTextField", "#tfOutputLogDirectoryTextField"),
-    LogTextArea("taLogTextArea", "#taLogTextArea"),
+    LogTextArea("taLog", "#taLog"),
+    PresetComboBox("cbPreset", "#cbPreset"),
     ;
 
     Widget(String id, String qualifiedId) {

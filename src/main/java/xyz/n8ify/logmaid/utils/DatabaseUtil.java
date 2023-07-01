@@ -64,13 +64,37 @@ public class DatabaseUtil {
         return presets;
     }
 
-    public static void insertPreset(Preset preset) throws SQLException {
-        final String sql = "INSERT INTO PRESET (PRESET_NAME, PRESET_VALUE) VALUES(?, ?)";
-        try (PreparedStatement stm = connection.prepareStatement(sql)) {
+    public static void upsertPreset(Preset preset) throws SQLException {
+
+        int updateId = -1;
+
+        final String selectSql = "SELECT ID FROM PRESET WHERE PRESET_NAME = ?";
+        try (PreparedStatement stm = connection.prepareStatement(selectSql)) {
             stm.setString(1, preset.getName());
-            stm.setString(2, gson.toJson(preset.getConfig()));
-            stm.executeUpdate();
+            try(ResultSet rs = stm.executeQuery()) {
+                if (rs.next()) {
+                    updateId = rs.getInt(1);
+                }
+            }
         }
+
+        if (updateId == -1) {
+            final String insertSql = "INSERT INTO PRESET (PRESET_NAME, PRESET_VALUE) VALUES(?, ?)";
+            try (PreparedStatement stm = connection.prepareStatement(insertSql)) {
+                stm.setString(1, preset.getName());
+                stm.setString(2, gson.toJson(preset.getConfig()));
+                stm.executeUpdate();
+            }
+        } else {
+            final String updateSql = "UPDATE PRESET SET PRESET_NAME = ?, PRESET_VALUE = ? WHERE ID = ?";
+            try (PreparedStatement stm = connection.prepareStatement(updateSql)) {
+                stm.setString(1, preset.getName());
+                stm.setString(2, gson.toJson(preset.getConfig()));
+                stm.setInt(3, updateId);
+                stm.executeUpdate();
+            }
+        }
+
     }
 
 }

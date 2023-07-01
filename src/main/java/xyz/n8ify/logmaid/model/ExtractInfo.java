@@ -80,6 +80,10 @@ public class ExtractInfo {
         this.adhocKeyWordValues = adhocKeyWordValues;
         this.ignoredKeyWordValues = ignoredKeyWordValues;
         this.groupedThreadKeyWordValues = groupedThreadKeyWordValues;
+        this.rawInterestedKeywordString = parseToRawKeyword(this.interestedKeyWordValues);
+        this.rawAdhocKeywordString = parseToRawKeyword(this.adhocKeyWordValues);
+        this.rawIgnoredKeywordString = parseToRawKeyword(this.ignoredKeyWordValues);
+        this.rawGroupedThreadKeywordString = parseToRawKeyword(this.groupedThreadKeyWordValues);
         this.inputLogDirPath = inputLogDirPath;
         this.outputLogDirPath = outputLogDirPath;
     }
@@ -157,6 +161,10 @@ public class ExtractInfo {
                 .filter(it -> !it.isEmpty())
                 .filter(it -> !it.contains(IGNORED_SIGN))
                 .collect(Collectors.toList());
+    }
+
+    private String parseToRawKeyword(List<String> data) {
+        return String.join(NEW_LINE, data);
     }
 
     public boolean isAdHocKeywordProvided() {

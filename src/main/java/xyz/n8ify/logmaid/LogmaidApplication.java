@@ -36,6 +36,8 @@ public class LogmaidApplication extends BaseApplication {
         if (!presets.isEmpty()) {
             ExtractInfo.setInstance(presets.get(0));
         }
+
+
     }
 
     private Panel instatiatePanel() throws SQLException {

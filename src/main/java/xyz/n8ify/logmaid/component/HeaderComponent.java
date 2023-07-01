@@ -46,6 +46,7 @@ public class HeaderComponent extends AbstractComponent {
                 .toList());
         presets.add(LabelConstant.ADD_PRESET);
         ComboBox<String> cb = new ComboBox<>(FXCollections.observableArrayList(presets));
+        cb.setId(Widget.PresetComboBox.getId());
         HBox hb = new HBox(cb);
         cb.getSelectionModel().select(0);
         cb.setMinWidth(UIConstant.HEADER_INPUT_BOX_WIDTH);
@@ -55,6 +56,7 @@ public class HeaderComponent extends AbstractComponent {
                     presets.add(presets.size() - 1, addPresetName);
                     cb.setItems(FXCollections.observableArrayList(presets));
                     cb.getSelectionModel().select(presets.size() > 2 ? presets.size() - 2 : 0); /* Selected latest item (not include add preset option) */
+                    application.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Preset [%s] was created", addPresetName)));
                     return null;
                 });
             } else {
@@ -64,6 +66,12 @@ public class HeaderComponent extends AbstractComponent {
 
         Button btnSavePreset = new Button();
         btnSavePreset.setText(StringConstant.SAVE);
+        btnSavePreset.setOnMouseClicked(event -> {
+            savePreset(application, preset -> {
+                application.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Preset [%s] was saved", preset.getName())));
+                return null;
+            });
+        });
 
         HBox container = new HBox(UIConstant.SM_INSET);
         container.getChildren().addAll(
@@ -133,18 +141,20 @@ public class HeaderComponent extends AbstractComponent {
 
     /* ----- */
     private static void addPreset(BaseApplication application, Function<String, Void> onSuccess) {
+        TextInputDialog tidNamePreset = new TextInputDialog();
+        tidNamePreset.setHeaderText(LabelConstant.ADD_PRESET);
+        String addPresetName = tidNamePreset.showAndWait().orElse(StringConstant.EMPTY);
+        if (!StringUtil.isNotNullOrEmpty(addPresetName)) {
+            return;
+        }
+        onSuccess.apply(addPresetName);
+    }
+
+    private static void savePreset(BaseApplication application, Function<Preset, Void> onSuccess) {
         try {
-
-            TextInputDialog tidNamePreset = new TextInputDialog();
-            tidNamePreset.setHeaderText(LabelConstant.ADD_PRESET);
-            String addPresetName = tidNamePreset.showAndWait().orElse(StringConstant.EMPTY);
-            if (!StringUtil.isNotNullOrEmpty(addPresetName)) {
-                return;
-            }
-
+            String addPresetName = application.<ComboBox<String>>findByWidget(Widget.PresetComboBox).getValue();
             final Preset preset = new Preset();
             preset.setName(addPresetName);
-
             final Preset.Config config = new Preset.Config();
             final ExtractInfo extractInfo = ExtractInfo.getInstance();
             config.setInputLogDirectory(extractInfo.getInputLogDirPath());
@@ -154,13 +164,11 @@ public class HeaderComponent extends AbstractComponent {
             config.setIgnoredKeyWordValues(extractInfo.getIgnoredKeywordList());
             config.setGroupedThreadKeyWordValues(extractInfo.getGroupedThreadKeywordList());
             preset.setConfig(config);
-            DatabaseUtil.insertPreset(preset);
-            onSuccess.apply(addPresetName);
+            DatabaseUtil.upsertPreset(preset);
+            onSuccess.apply(preset);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
-
 
 }

@@ -1,11 +1,9 @@
 package xyz.n8ify.logmaid;
 
 import javafx.application.Application;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import xyz.n8ify.logmaid.callback.ApplicationCallback;
 import xyz.n8ify.logmaid.callback.LogCallback;
@@ -26,6 +24,10 @@ public class BaseApplication extends Application implements ApplicationCallback,
 
     public Stage getStage() {
         return stage;
+    }
+
+    public <T extends Control> T findByWidget(Widget widget) {
+        return (T) this.stage.getScene().lookup(widget.getQualifiedId());
     }
 
     @Override
