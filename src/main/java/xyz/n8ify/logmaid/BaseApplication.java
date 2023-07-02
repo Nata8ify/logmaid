@@ -17,7 +17,7 @@ import xyz.n8ify.logmaid.utils.DatabaseUtil;
 import xyz.n8ify.logmaid.utils.LogContentUtil;
 import xyz.n8ify.logmaid.utils.LogExtractorUtil;
 
-public class BaseApplication extends Application implements ApplicationCallback, LogCallback {
+public abstract class BaseApplication extends Application implements ApplicationCallback, LogCallback {
 
     private Stage stage;
 

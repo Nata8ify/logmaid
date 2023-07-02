@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static xyz.n8ify.logmaid.constant.StringConstant.COMMA;
 import static xyz.n8ify.logmaid.constant.StringConstant.NEW_LINE;
@@ -79,7 +80,7 @@ public class LogExtractorUtil {
         return Arrays.stream(files)
                 .filter(it -> !it.isDirectory())
                 .sorted(Comparator.comparing(File::lastModified))
-                .toList();
+                .collect(Collectors.toList());
     }
 
 }

@@ -3,9 +3,9 @@ package xyz.n8ify.logmaid;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import org.kordamp.bootstrapfx.BootstrapFX;
-import org.kordamp.bootstrapfx.scene.layout.Panel;
 import xyz.n8ify.logmaid.component.BottomComponent;
 import xyz.n8ify.logmaid.component.CenterComponent;
 import xyz.n8ify.logmaid.component.HeaderComponent;
@@ -26,7 +26,7 @@ public class LogmaidApplication extends BaseApplication {
     public void start(Stage stage) throws Exception {
         super.start(stage);
         initialPreProcess();
-        initialStage(stage, instatiatePanel());
+        initialStage(stage, instantiatePanel());
         initialPostProcess();
     }
 
@@ -42,29 +42,19 @@ public class LogmaidApplication extends BaseApplication {
         refreshWidget();
     }
 
-    private Panel instatiatePanel() throws SQLException {
-        Panel panel = new Panel(CommonConstant.APP_NAME);
-        panel.getStyleClass().add("panel-default");
-
+    private Pane instantiatePanel() throws SQLException {
         BorderPane content = new BorderPane();
         content.setPadding(new Insets(UIConstant.SM_INSET));
         content.setTop(HeaderComponent.init(this));
         content.setCenter(CenterComponent.init(this));
         content.setBottom(BottomComponent.init(this));
-
-        panel.setBody(content);
-        return panel;
+        return content;
     }
 
-    private void initialStage(Stage stage, Panel panel) {
+    private void initialStage(Stage stage, Pane panel) {
         Scene scene = new Scene(panel);
-        scene.getStylesheets().add(BootstrapFX.bootstrapFXStylesheet());
         stage.setTitle(String.format("%s %s", CommonConstant.APP_NAME, CommonConstant.VERSION));
         stage.setScene(scene);
-        stage.setMinWidth(UIConstant.WINDOW_MIN_WIDTH);
-        stage.setMinHeight(UIConstant.WINDOW_MIN_HEIGHT);
-        stage.setMaxWidth(UIConstant.WINDOW_MAX_WIDTH);
-        stage.setMaxHeight(UIConstant.WINDOW_MAX_HEIGHT);
         stage.setFullScreen(false);
         stage.setResizable(false);
         stage.sizeToScene();
