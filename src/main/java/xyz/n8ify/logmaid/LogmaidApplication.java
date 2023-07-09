@@ -2,6 +2,7 @@ package xyz.n8ify.logmaid;
 
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -58,6 +59,7 @@ public class LogmaidApplication extends BaseApplication {
         stage.setFullScreen(false);
         stage.setResizable(false);
         stage.sizeToScene();
+        stage.getIcons().add(new Image("icon.png"));
         stage.show();
         super.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Logmaid v%s is initialized", CommonConstant.VERSION)));
     }

@@ -4,9 +4,7 @@ import xyz.n8ify.logmaid.callback.LogCallback;
 import xyz.n8ify.logmaid.enums.LogLevel;
 import xyz.n8ify.logmaid.model.ExtractInfo;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -48,19 +46,18 @@ public class LogExtractorUtil {
             File extractedFile = FileUtil.createFile(outputDir, String.format(OUTPUT_LOG_FILENAME_FORMAT, keyword));
             logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Create output extracted keyword file at [%s]", extractedFile.getAbsolutePath())));
 
-            try (FileWriter writer = new FileWriter(extractedFile)) {
+            try (Writer writer = new BufferedWriter(new FileWriter(extractedFile))) {
                 for (int i = 0; i < logFiles.size(); i++) {
 
                     final File logFile = logFiles.get(i);
                     final String logFileName = logFile.getName();
-                    writer.write(StringUtil.generateHeaderString(logFileName));
+                    writer.append(StringUtil.generateHeaderString(logFileName));
                     logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Extracting keyword [%s] on log file [%s](%d of %d)... ", keyword, logFileName, i + 1, logFiles.size())));
 
                     List<String> lines = Files.readAllLines(logFile.toPath());
                     for (String line : lines) {
                         if (!extractInfo.isContainIgnoredKeyword(line) && line.contains(keyword)) {
-                            writer.write(line);
-                            writer.write(NEW_LINE);
+                            writer.append(line).append(NEW_LINE);
                         }
                     }
                 }
