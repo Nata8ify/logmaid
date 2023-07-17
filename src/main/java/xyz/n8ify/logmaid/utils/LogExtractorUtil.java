@@ -6,10 +6,12 @@ import xyz.n8ify.logmaid.model.ExtractInfo;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static xyz.n8ify.logmaid.constant.StringConstant.COMMA;
 import static xyz.n8ify.logmaid.constant.StringConstant.NEW_LINE;
@@ -23,6 +25,7 @@ public class LogExtractorUtil {
         File inputDir = new File(extractInfo.getInputLogDirPath());
         File outputDir = new File(extractInfo.getOutputLogDirPath());
         List<File> logFiles = getLogFiles(inputDir);
+        ArrayList<File> extractedFileLists = new ArrayList<>();
 
         if (!inputDir.exists()) {
             logCallback.onLog(LogContentUtil.generate(LogLevel.ERROR, String.format("Input directory [%s] does not exists (Extraction abort)...", inputDir.getAbsolutePath())));
@@ -44,6 +47,7 @@ public class LogExtractorUtil {
             if (keyword.isEmpty()) continue;
 
             File extractedFile = FileUtil.createFile(outputDir, String.format(OUTPUT_LOG_FILENAME_FORMAT, keyword));
+            extractedFileLists.add(extractedFile);
             logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Create output extracted keyword file at [%s]", extractedFile.getAbsolutePath())));
 
             try (Writer writer = new BufferedWriter(new FileWriter(extractedFile))) {
@@ -64,6 +68,11 @@ public class LogExtractorUtil {
                 writer.flush();
             }
             logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Extraction with keyword [%s] finished", keyword)));
+
+            if (extractInfo.isGroupedThreadKeywordProvided()) {
+                logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Start to extract keyword [%s] with grouped as single file", keyword)));
+            }
+
         }
         logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, "Extraction completed"));
 
@@ -76,8 +85,16 @@ public class LogExtractorUtil {
         }
         return Arrays.stream(files)
                 .filter(it -> !it.isDirectory())
-                .sorted(Comparator.comparing(File::lastModified))
+                .sorted(Comparator.comparing(file -> sumBytes(file.getName().getBytes())))
                 .collect(Collectors.toList());
+    }
+
+    private static int sumBytes(byte[] bytes) {
+        int result = 0;
+        for (byte b : bytes) {
+            result += b;
+        }
+        return result;
     }
 
 }

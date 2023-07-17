@@ -171,6 +171,10 @@ public class ExtractInfo {
         return StringUtil.isNotNullOrEmpty(this.rawAdhocKeywordString);
     }
 
+    public boolean isGroupedThreadKeywordProvided() {
+        return StringUtil.isNotNullOrEmpty(this.rawGroupedThreadKeywordString);
+    }
+
     public void replaceInterestedKeywordToAdHocKeyword() {
         this.interestedKeyWordValues = this.adhocKeyWordValues;
     }
