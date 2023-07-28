@@ -18,13 +18,14 @@ import static xyz.n8ify.logmaid.constant.StringConstant.NEW_LINE;
 
 public class LogExtractorUtil {
     private static final String OUTPUT_LOG_FILENAME_FORMAT = "%s_ExtractedLog.log";
+    private static final List<String>  ALLOW_EXTENSIONS = Arrays.asList("log", "LOG", "txt", "TXT");
 
     public static void proceed(ExtractInfo extractInfo, LogCallback logCallback) throws IOException {
 
         /* Prepare file */
         File inputDir = new File(extractInfo.getInputLogDirPath());
         File outputDir = new File(extractInfo.getOutputLogDirPath());
-        List<File> logFiles = getLogFiles(inputDir);
+        List<File> logFiles = getLogFiles(inputDir, logCallback);
         ArrayList<File> extractedFileLists = new ArrayList<>();
 
         if (!inputDir.exists()) {
@@ -46,7 +47,7 @@ public class LogExtractorUtil {
 
             if (keyword.isEmpty()) continue;
 
-            File extractedFile = FileUtil.createFile(outputDir, String.format(OUTPUT_LOG_FILENAME_FORMAT, keyword));
+            File extractedFile = FileUtil.createFile(outputDir, String.format(OUTPUT_LOG_FILENAME_FORMAT, keyword.trim()));
             extractedFileLists.add(extractedFile);
             logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Create output extracted keyword file at [%s]", extractedFile.getAbsolutePath())));
 
@@ -78,14 +79,15 @@ public class LogExtractorUtil {
 
     }
 
-    private static List<File> getLogFiles(File inputDir) {
+    private static List<File> getLogFiles(File inputDir, LogCallback logCallback) {
         File[] files = inputDir.listFiles();
         if (files == null) {
             files = new File[0];
         }
         return Arrays.stream(files)
                 .filter(it -> !it.isDirectory())
-                .sorted(Comparator.comparing(file -> sumBytes(file.getName().getBytes())))
+                .filter(it -> ALLOW_EXTENSIONS.contains(it.getName().substring(it.getName().lastIndexOf(".") + 1)))
+                .sorted(Comparator.comparing(file -> fileNameOnlyDigit(file.getName(), logCallback)))
                 .collect(Collectors.toList());
     }
 
@@ -95,6 +97,16 @@ public class LogExtractorUtil {
             result += b;
         }
         return result;
+    }
+
+    private static long fileNameOnlyDigit(String fileName, LogCallback logCallback) {
+        try {
+            String replacementResult = fileName.replaceAll("\\.", "").replaceAll("\\D", "");
+            return StringUtil.isNotNullOrEmpty(replacementResult) ? Long.parseLong(replacementResult) : Long.MAX_VALUE;
+        } catch (Exception e) {
+            logCallback.onLog(LogContentUtil.generate(LogLevel.ERROR, String.format("Parse file name for digit error, Use legacy logic for ordering... [Caused by %s]", e.getMessage())));
+            return 0L;
+        }
     }
 
 }
