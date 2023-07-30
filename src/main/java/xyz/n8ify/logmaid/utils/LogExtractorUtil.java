@@ -26,15 +26,13 @@ public class LogExtractorUtil {
         File inputDir = new File(extractInfo.getInputLogDirPath());
         File outputDir = new File(extractInfo.getOutputLogDirPath());
         List<File> logFiles = getLogFiles(inputDir, logCallback);
-        ArrayList<File> extractedFileLists = new ArrayList<>();
 
         if (!inputDir.exists()) {
             logCallback.onLog(LogContentUtil.generate(LogLevel.ERROR, String.format("Input directory [%s] does not exists (Extraction abort)...", inputDir.getAbsolutePath())));
             return;
         }
-        if (!outputDir.exists()) {
-            logCallback.onLog(LogContentUtil.generate(LogLevel.ERROR, String.format("Output directory [%s] does not exists (Extraction abort)...", outputDir.getAbsolutePath())));
-            return;
+        if (!outputDir.exists() && outputDir.mkdirs()) {
+            logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Output directory [%s] does not exists and cannot be create (Extraction abort)...", outputDir.getAbsolutePath())));
         }
 
         if (extractInfo.isAdHocKeywordProvided()) {
@@ -48,7 +46,6 @@ public class LogExtractorUtil {
             if (keyword.isEmpty()) continue;
 
             File extractedFile = FileUtil.createFile(outputDir, String.format(OUTPUT_LOG_FILENAME_FORMAT, keyword.trim()));
-            extractedFileLists.add(extractedFile);
             logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Create output extracted keyword file at [%s]", extractedFile.getAbsolutePath())));
 
             try (Writer writer = new BufferedWriter(new FileWriter(extractedFile))) {

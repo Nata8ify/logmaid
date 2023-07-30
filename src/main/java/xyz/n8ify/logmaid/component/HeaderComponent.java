@@ -1,11 +1,13 @@
 package xyz.n8ify.logmaid.component;
 
 import javafx.collections.FXCollections;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
 import xyz.n8ify.logmaid.BaseApplication;
 import xyz.n8ify.logmaid.config.AppConfig;
+import xyz.n8ify.logmaid.constant.CommonConstant;
 import xyz.n8ify.logmaid.constant.LabelConstant;
 import xyz.n8ify.logmaid.constant.StringConstant;
 import xyz.n8ify.logmaid.constant.UIConstant;
@@ -116,6 +118,15 @@ public class HeaderComponent extends AbstractComponent {
             File destination = chooser.showDialog(application.getStage());
             if (destination != null) {
                 tfLogInputDir.setText(destination.getAbsolutePath());
+
+                try {
+                    TextField tfLogOutputDir = application.<TextField>findByWidget(Widget.OutputLogDirectoryTextField);
+                    if (!StringUtil.isNotNullOrEmpty(tfLogOutputDir.getText())) {
+                        String extractedLogOutput = destination.getAbsolutePath() + File.separator + CommonConstant.DEFAULT_OUTPUT_PATH_SUFFIX;
+                        application.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Auto set extracted log output to %s", extractedLogOutput)));
+                        tfLogOutputDir.setText(extractedLogOutput);
+                    }
+                } catch (Exception ignored) {}
             }
         });
 
