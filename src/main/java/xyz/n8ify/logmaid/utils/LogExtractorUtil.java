@@ -1,15 +1,13 @@
 package xyz.n8ify.logmaid.utils;
 
 import xyz.n8ify.logmaid.callback.LogCallback;
+import xyz.n8ify.logmaid.constant.StringConstant;
 import xyz.n8ify.logmaid.enums.LogLevel;
 import xyz.n8ify.logmaid.model.ExtractInfo;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,8 +15,11 @@ import static xyz.n8ify.logmaid.constant.StringConstant.COMMA;
 import static xyz.n8ify.logmaid.constant.StringConstant.NEW_LINE;
 
 public class LogExtractorUtil {
-    private static final String OUTPUT_LOG_FILENAME_FORMAT = "%s_ExtractedLog.log";
+    private static final String OUTPUT_LOG_FILENAME_SUFFIX = "ExtractedLog.log";
+    private static final String OUTPUT_LOG_FILENAME_FORMAT = "%s_" + OUTPUT_LOG_FILENAME_SUFFIX;
+    private static final String OUTPUT_LOG_GROUPED_FILENAME_SUFFIX = "ExtractedLog_Grouped.log";
     private static final List<String>  ALLOW_EXTENSIONS = Arrays.asList("log", "LOG", "txt", "TXT");
+    private static final String DEFAULT_CLOSURE = "]";
 
     public static void proceed(ExtractInfo extractInfo, LogCallback logCallback) throws IOException {
 
@@ -64,6 +65,7 @@ public class LogExtractorUtil {
                     }
                 }
                 writer.flush();
+                groupedKeyword(extractedFile, extractInfo.getGroupedThreadKeywordList(), logCallback);
             }
             logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Extraction with keyword [%s] finished", keyword)));
 
@@ -74,6 +76,72 @@ public class LogExtractorUtil {
         }
         logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, "Extraction completed"));
 
+    }
+
+    private static void groupedKeyword(File extractedFile, List<String> groupedThreadKeywordList, LogCallback logCallback) {
+        if (groupedThreadKeywordList == null || groupedThreadKeywordList.isEmpty()) {
+            logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, "Skip for grouping keyword"));
+            return;
+        }
+        for (String groupedKeyword : groupedThreadKeywordList) {
+            final File groupedKeywordFile = new File(extractedFile.getParent(), extractedFile.getName().replace(OUTPUT_LOG_FILENAME_SUFFIX, OUTPUT_LOG_GROUPED_FILENAME_SUFFIX));
+            final String[] groupedKeywordAndClosure = groupedKeyword.split(StringConstant.SPACE);
+            final String keyword = groupedKeywordAndClosure[0];
+            final String closure = getClosure(groupedKeywordAndClosure, logCallback);
+            try {
+
+                /* Prepare File */
+                if (!groupedKeywordFile.exists()) {
+                    if (!groupedKeywordFile.createNewFile()) {
+                        throw new IOException("Something went wrong");
+                    }
+                }
+
+                /* Grouped */
+                final List<String> lines = Files.readAllLines(extractedFile.toPath());
+                final Set<String> possibleGroupableKeywordSet = processAndGetGroupPossibleKeywords(lines, keyword, closure, logCallback);
+                try (Writer writer = new BufferedWriter(new FileWriter(groupedKeywordFile))) {
+                    for (String possibleGroupableKeyword : possibleGroupableKeywordSet) {
+                        final String header = String.format("[[%s]]", possibleGroupableKeyword);
+                        writer.append(NEW_LINE).append(header);
+                        lines.stream()
+                                .filter(line -> line.contains(possibleGroupableKeyword))
+                                .forEachOrdered(line -> {
+                                    try { writer.append(NEW_LINE).append(line); }
+                                    catch (IOException e) { throw new RuntimeException(e); }
+                                });
+                    }
+                    writer.append(NEW_LINE);
+                    writer.flush();
+                }
+
+            } catch (IOException e) {
+                logCallback.onLog(LogContentUtil.generate(LogLevel.ERROR, String.format("Cannot create a grouped file by keyword [%s] at [%s]", groupedKeyword, groupedKeywordFile.getAbsolutePath())));
+                logCallback.onLog(LogContentUtil.generate(LogLevel.ERROR, e.getMessage()));
+            }
+        }
+    }
+
+    private static Set<String> processAndGetGroupPossibleKeywords(List<String> lines, String keyword, String closure, LogCallback logCallback) {
+        return lines.stream()
+                .filter(line -> line.contains(keyword))
+                .map(line -> {
+                    final int indexOfKeyword = line.indexOf(keyword);
+                    final int indexOfClosure = line.indexOf(closure, indexOfKeyword);
+                    return line.substring(indexOfKeyword, indexOfClosure);
+                })
+                .collect(Collectors.toSet());
+    }
+
+    private static String getClosure(String[] groupedKeywordAndClosure, LogCallback logCallback) {
+        if (groupedKeywordAndClosure.length == 2) {
+            final String closure = groupedKeywordAndClosure[1];
+            logCallback.onLog(LogContentUtil.generate(LogLevel.WARN, String.format("Use \"%s\" as closure", closure)));
+            return closure;
+        } else {
+            logCallback.onLog(LogContentUtil.generate(LogLevel.WARN, String.format("Use default closure \"%s\"", DEFAULT_CLOSURE)));
+            return DEFAULT_CLOSURE;
+        }
     }
 
     private static List<File> getLogFiles(File inputDir, LogCallback logCallback) {

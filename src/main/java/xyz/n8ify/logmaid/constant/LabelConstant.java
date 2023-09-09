@@ -12,7 +12,7 @@ public class LabelConstant {
     public static final String INTERESTED_KEYWORD_INPUT_HINT = "List of Interested Keyword(s)... (Split with new line)";
     public static final String ADHOC_KEYWORD_INPUT_HINT = "List of Adhoc Keyword(s)... (Split with new line)";
     public static final String IGNORED_KEYWORD_INPUT_HINT = "List of Ignored Keyword(s)... (Split with new line)";
-    public static final String GROUPED_THREAD_INPUT_HINT = "List of Grouped Thread Keyword(s)... (Split with new line)";
+    public static final String GROUPED_THREAD_INPUT_HINT = "List of Grouped Thread Keyword(s)... (\"Grouped keyword[SPACE]Closure\" (Example, \"thread-1 ]\"), Split with new line)";
 
     public static final String ADD_PRESET = "Add New Preset...";
 
