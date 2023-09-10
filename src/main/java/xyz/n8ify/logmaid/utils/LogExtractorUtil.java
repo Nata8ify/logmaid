@@ -18,8 +18,12 @@ public class LogExtractorUtil {
     private static final String OUTPUT_LOG_FILENAME_SUFFIX = "ExtractedLog.log";
     private static final String OUTPUT_LOG_FILENAME_FORMAT = "%s_" + OUTPUT_LOG_FILENAME_SUFFIX;
     private static final String OUTPUT_LOG_GROUPED_FILENAME_SUFFIX = "ExtractedLog_Grouped.log";
-    private static final List<String>  ALLOW_EXTENSIONS = Arrays.asList("log", "LOG", "txt", "TXT");
+    private static final String OUTPUT_LOG_GROUPED_FILENAME_FORMAT = "%s_" + OUTPUT_LOG_GROUPED_FILENAME_SUFFIX;
     private static final String DEFAULT_CLOSURE = "]";
+
+    private static final List<String>  ALLOW_EXTENSIONS = Arrays.asList("log", "LOG", "txt", "TXT");
+    private static final int MIN_GROUPED_KEYWORD_ALLOW_SIZE = 1;
+    private static final int MAX_GROUPED_KEYWORD_ALLOW_SIZE = 100;
 
     public static void proceed(ExtractInfo extractInfo, LogCallback logCallback) throws IOException {
 
@@ -84,10 +88,11 @@ public class LogExtractorUtil {
             return;
         }
         for (String groupedKeyword : groupedThreadKeywordList) {
-            final File groupedKeywordFile = new File(extractedFile.getParent(), extractedFile.getName().replace(OUTPUT_LOG_FILENAME_SUFFIX, OUTPUT_LOG_GROUPED_FILENAME_SUFFIX));
+            final File groupedKeywordFile = new File(extractedFile.getParent(), String.format(extractedFile.getName().replace(OUTPUT_LOG_FILENAME_SUFFIX, OUTPUT_LOG_GROUPED_FILENAME_FORMAT), groupedKeyword));
             final String[] groupedKeywordAndClosure = groupedKeyword.split(StringConstant.SPACE);
             final String keyword = groupedKeywordAndClosure[0];
             final String closure = getClosure(groupedKeywordAndClosure, logCallback);
+            logCallback.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Start keyword grouping with \"%s\" and use \"%s\" as closure sign.", keyword, closure)));
             try {
 
                 /* Prepare File */
@@ -100,6 +105,13 @@ public class LogExtractorUtil {
                 /* Grouped */
                 final List<String> lines = Files.readAllLines(extractedFile.toPath());
                 final Set<String> possibleGroupableKeywordSet = processAndGetGroupPossibleKeywords(lines, keyword, closure, logCallback);
+                if (possibleGroupableKeywordSet.isEmpty()) {
+                    logCallback.onLog(LogContentUtil.generate(LogLevel.WARN, String.format("No possible grouped keyword for extracting (Skip entire grouped keyword \"%s\")", possibleGroupableKeywordSet)));
+                    if (groupedKeywordFile.delete()) {
+                        logCallback.onLog(LogContentUtil.generate(LogLevel.WARN, String.format("[%s] file is deleted.", groupedKeywordFile.getName())));
+                    }
+                    continue;
+                }
                 try (Writer writer = new BufferedWriter(new FileWriter(groupedKeywordFile))) {
                     for (String possibleGroupableKeyword : possibleGroupableKeywordSet) {
                         final String header = String.format("[[%s]]", possibleGroupableKeyword);
@@ -110,8 +122,8 @@ public class LogExtractorUtil {
                                     try { writer.append(NEW_LINE).append(line); }
                                     catch (IOException e) { throw new RuntimeException(e); }
                                 });
+                        writer.append(NEW_LINE);
                     }
-                    writer.append(NEW_LINE);
                     writer.flush();
                 }
 
@@ -124,11 +136,18 @@ public class LogExtractorUtil {
 
     private static Set<String> processAndGetGroupPossibleKeywords(List<String> lines, String keyword, String closure, LogCallback logCallback) {
         return lines.stream()
-                .filter(line -> line.contains(keyword))
+                .filter(line -> line.contains(keyword) && line.substring(line.indexOf(keyword)).contains(closure))
                 .map(line -> {
                     final int indexOfKeyword = line.indexOf(keyword);
                     final int indexOfClosure = line.indexOf(closure, indexOfKeyword);
                     return line.substring(indexOfKeyword, indexOfClosure);
+                })
+                .filter(possibleKeyword -> {
+                    boolean isPossibleKeywordMatchCriteria = possibleKeyword.trim().length() >= MIN_GROUPED_KEYWORD_ALLOW_SIZE && possibleKeyword.length() <= MAX_GROUPED_KEYWORD_ALLOW_SIZE;
+                    if (!isPossibleKeywordMatchCriteria) {
+                        logCallback.onLog(LogContentUtil.generate(LogLevel.WARN, String.format("\"%s\" was skipped for grouping keyword due to invalid calculated by closure output length [minimumLength=%d, maximumLength=%d, outputGroupedKeyword=%s]", keyword, MIN_GROUPED_KEYWORD_ALLOW_SIZE, MAX_GROUPED_KEYWORD_ALLOW_SIZE, possibleKeyword)));
+                    }
+                    return isPossibleKeywordMatchCriteria;
                 })
                 .collect(Collectors.toSet());
     }
