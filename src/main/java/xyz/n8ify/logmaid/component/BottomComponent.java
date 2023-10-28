@@ -18,7 +18,9 @@ public class BottomComponent extends AbstractComponent {
     private static Button initExtractButton(BaseApplication application) {
 
         Button btnExtract = new Button(LabelConstant.EXTRACT_IT_TEXT);
-        btnExtract.setOnMouseClicked(application::onExtractClick);
+        btnExtract.setOnMouseClicked((e) -> {
+            application.onExtractClick(btnExtract, e);
+        });
 
         return btnExtract;
     }

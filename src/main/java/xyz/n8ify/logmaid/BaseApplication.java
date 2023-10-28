@@ -1,11 +1,13 @@
 package xyz.n8ify.logmaid;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import xyz.n8ify.logmaid.callback.ApplicationCallback;
+import xyz.n8ify.logmaid.callback.BeforeAfterCallback;
 import xyz.n8ify.logmaid.callback.LogCallback;
 import xyz.n8ify.logmaid.constant.LabelConstant;
 import xyz.n8ify.logmaid.constant.StringConstant;
@@ -50,13 +52,23 @@ public abstract class BaseApplication extends Application implements Application
     }
 
     @Override
-    public void onExtractClick(MouseEvent event) {
+    public void onExtractClick(Button button, MouseEvent event) {
         try {
             this.refreshExtractInfo();
             boolean isInputOutputDirectoryProvide = ExtractInfo.getInstance().isInputOutputDirectoryProvide();
             boolean isRequiredDataProvided = ExtractInfo.getInstance().isRequiredDataProvided();
             if (isInputOutputDirectoryProvide && isRequiredDataProvided) {
-                LogExtractorUtil.proceed(ExtractInfo.getInstance(), this);
+                LogExtractorUtil.proceedInBackground(ExtractInfo.getInstance(), this, new BeforeAfterCallback() {
+                    @Override
+                    public void before() {
+                        button.setDisable(true);
+                    }
+
+                    @Override
+                    public void after() {
+                        button.setDisable(false);
+                    }
+                });
             } else {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setHeaderText(LabelConstant.WARNING);
@@ -71,8 +83,10 @@ public abstract class BaseApplication extends Application implements Application
 
     @Override
     public void onLog(String log) {
-        TextArea taLogTextArea =  ((TextArea) stage.getScene().lookup(Widget.LogTextArea.getQualifiedId()));
-        taLogTextArea.appendText(StringConstant.NEW_LINE + log);
+        Platform.runLater(() -> {
+            TextArea taLogTextArea =  ((TextArea) stage.getScene().lookup(Widget.LogTextArea.getQualifiedId()));
+            taLogTextArea.appendText(StringConstant.NEW_LINE + log);
+        });
     }
 
     /* --- Helper function --- */

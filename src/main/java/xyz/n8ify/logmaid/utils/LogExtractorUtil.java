@@ -1,5 +1,7 @@
 package xyz.n8ify.logmaid.utils;
 
+import javafx.application.Platform;
+import xyz.n8ify.logmaid.callback.BeforeAfterCallback;
 import xyz.n8ify.logmaid.callback.LogCallback;
 import xyz.n8ify.logmaid.constant.StringConstant;
 import xyz.n8ify.logmaid.enums.LogLevel;
@@ -8,6 +10,8 @@ import xyz.n8ify.logmaid.model.ExtractInfo;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,6 +28,20 @@ public class LogExtractorUtil {
     private static final List<String>  ALLOW_EXTENSIONS = Arrays.asList("log", "LOG", "txt", "TXT");
     private static final int MIN_GROUPED_KEYWORD_ALLOW_SIZE = 1;
     private static final int MAX_GROUPED_KEYWORD_ALLOW_SIZE = 100;
+
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    public static void proceedInBackground(ExtractInfo extractInfo, LogCallback logCallback, BeforeAfterCallback beforeAfterCallback) throws IOException {
+        executor.execute(() -> {
+            try {
+                beforeAfterCallback.before();
+                proceed(ExtractInfo.getInstance(), logCallback);
+            } catch (Exception e) {
+                logCallback.onLog(LogContentUtil.generate(LogLevel.ERROR, String.format("Error during extraction (%s)", e.getMessage())));
+            }
+            beforeAfterCallback.after();
+        });
+    }
 
     public static void proceed(ExtractInfo extractInfo, LogCallback logCallback) throws IOException {
 
