@@ -121,11 +121,9 @@ public class HeaderComponent extends AbstractComponent {
 
                 try {
                     TextField tfLogOutputDir = application.<TextField>findByWidget(Widget.OutputLogDirectoryTextField);
-                    if (!StringUtil.isNotNullOrEmpty(tfLogOutputDir.getText())) {
-                        String extractedLogOutput = destination.getAbsolutePath() + File.separator + CommonConstant.DEFAULT_OUTPUT_PATH_SUFFIX;
-                        application.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Auto set extracted log output to %s", extractedLogOutput)));
-                        tfLogOutputDir.setText(extractedLogOutput);
-                    }
+                    String extractedLogOutput = destination.getAbsolutePath() + File.separator + CommonConstant.DEFAULT_OUTPUT_PATH_SUFFIX;
+                    application.onLog(LogContentUtil.generate(LogLevel.INFO, String.format("Auto set extracted log output to %s", extractedLogOutput)));
+                    tfLogOutputDir.setText(extractedLogOutput);
                 } catch (Exception ignored) {}
             }
         });
@@ -153,9 +151,23 @@ public class HeaderComponent extends AbstractComponent {
         Button btnBrowse = new Button();
         btnBrowse.setText(StringConstant.BROWSE);
         btnBrowse.setOnMouseClicked(mouseEvent -> {
+
+            TextField tfLogInputDir = application.findByWidget(Widget.InputLogDirectoryTextField);
+            String setInputDir = tfLogInputDir.getText();
+            if (StringUtil.isNotNullOrEmpty(setInputDir)) {
+                chooser.setInitialDirectory(new File(setInputDir));
+            }
+
             File destination = chooser.showDialog(application.getStage());
             if (destination != null) {
-                tfLogOutputDir.setText(destination.getAbsolutePath());
+
+                String setOutputDir = destination.getAbsolutePath();
+
+                if (setOutputDir.equals(setInputDir)) {
+                    tfLogOutputDir.setText(setOutputDir + File.separator + CommonConstant.DEFAULT_OUTPUT_PATH_SUFFIX);
+                } else {
+                    tfLogOutputDir.setText(setOutputDir);
+                }
             }
         });
 
